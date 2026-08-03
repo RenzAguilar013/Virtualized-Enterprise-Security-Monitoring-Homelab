@@ -1,0 +1,41 @@
+# VMware Network Configuration
+
+## Purpose
+
+This lab uses VMware Workstation to simulate a network environment.
+
+## Virtual Networks
+
+### VMnet8 (NAT)
+
+Purpose:
+Provides Internet connectivity for the FortiGate WAN interface.
+
+Configuration
+
+- Network Type: NAT
+- Subnet: 192.168.100.0/24
+- Gateway: 192.168.100.2
+- Host Adapter: 192.168.100.1
+
+Connected Device
+
+- FortiGate port1
+
+---
+
+### VMnet2 (Host-only)
+
+Purpose:
+Acts as the internal LAN.
+
+Configuration
+
+- Network Type: Host-only
+- Subnet: 10.10.10.0/24
+- DHCP: Disabled
+
+Connected Devices
+
+- FortiGate port2
+- Windows 11 VM

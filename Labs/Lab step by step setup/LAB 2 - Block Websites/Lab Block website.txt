@@ -1,0 +1,95 @@
+Method 1: Web Filter (if FortiGuard is available)
+Step 1: Create a Web Filter Profile
+
+Go to:
+
+Security Profiles → Web Filter
+
+Click Create New.
+
+Name: Block_Social
+Step 2: Block a URL
+
+In the profile, find Static URL Filter.
+
+Enable it, then click Create New.
+
+Example:
+
+Type	URL	Action
+Simple	facebook.com	Block
+
+You can also add:
+
+URL	Action
+youtube.com	Block
+*.facebook.com	Block
+*.youtube.com	Block
+
+Save the profile.
+
+Step 3: Apply the Profile
+
+Go to:
+
+Policy & Objects → Firewall Policy
+
+Edit your LAN-to-Internet policy.
+
+Enable:
+
+Security Profiles
+Web Filter: Block_Social
+
+Save.
+
+Step 4: Test
+
+From your Windows VM:
+
+Visit https://facebook.com
+Visit https://youtube.com
+
+FortiGate should block the request.
+
+---------------------------------------------------------------------
+
+Method 2: Block by FQDN (Works without FortiGuard so I use this method)
+
+NOTE! : If the trial license doesn't include web filtering, you can block domains using an FQDN address object.
+
+Create an FQDN Address
+
+Go to:
+
+Policy & Objects → Addresses → Create New
+
+Configure:
+
+Name: Facebook
+Type: FQDN
+FQDN: facebook.com
+
+Create another:
+
+Name: YouTube
+FQDN: youtube.com
+Create a Deny Policy
+
+Go to:
+
+Policy & Objects → Firewall Policy → Create New
+
+Configure:
+
+Name: Block Facebook
+Incoming Interface: port2
+Outgoing Interface: port1
+Source: all
+Destination: Facebook
+Service: HTTPS, HTTP (or ALL)
+Action: Deny
+
+Move this rule above your LAN-to-Internet allow policy.
+
+Repeat for YouTube, or create an address group containing both domains.

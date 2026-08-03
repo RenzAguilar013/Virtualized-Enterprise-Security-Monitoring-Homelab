@@ -1,0 +1,142 @@
+# Firewall Policies
+
+This document describes the firewall policies configured on the FortiGate firewall to control outbound traffic from the internal LAN.
+
+---
+
+## Policy Overview
+
+| Policy Name | Source | Destination | Action | NAT | Purpose |
+|-------------|--------|-------------|--------|-----|---------|
+| Block Google DNS | All | Google DNS | Accept | Disabled | Prevents clients from bypassing the configured DNS server by directly accessing Google's public DNS servers. |
+| Block Instagram and Facebook | All | Facebook, Instagram, connect.facebook.net, graph.facebook.com (+ related domains) | Deny | Disabled | Blocks access to Facebook and Instagram during Office Hours. |
+| LAN-to-Internet | All | All | Accept | Enabled | Allows LAN clients to access the Internet using Source NAT. |
+| Implicit Deny | All | All | Deny | Disabled | Automatically blocks all traffic that does not match an existing firewall policy. |
+
+---
+
+# Policy Details
+
+## 1. Block Google DNS
+
+| Setting | Value |
+|---------|-------|
+| Incoming Interface | port2 |
+| Outgoing Interface | port1 |
+| Source | all |
+| Destination | Google DNS |
+| Schedule | Always |
+| Service | ALL |
+| Action | ACCEPT |
+| NAT | Disabled |
+
+### Purpose
+
+This policy matches traffic destined for Google's public DNS servers. It can be used together with additional security controls to prevent users from bypassing internal DNS filtering.
+
+---
+
+## 2. Block Instagram and Facebook
+
+| Setting | Value |
+|---------|-------|
+| Incoming Interface | port2 |
+| Outgoing Interface | port1 |
+| Source | all |
+| Destination | Facebook, Instagram, connect.facebook.net, graph.facebook.com (+ related domains) |
+| Schedule | Office_Hours |
+| Service | ALL |
+| Action | DENY |
+| NAT | Disabled |
+
+### Purpose
+
+Blocks access to Facebook and Instagram during business hours using FortiGate address objects.
+
+Security Profile
+
+- SSL Inspection: no-inspection
+
+---
+
+## 3. LAN-to-Internet
+
+| Setting | Value |
+|---------|-------|
+| Incoming Interface | port2 |
+| Outgoing Interface | port1 |
+| Source | all |
+| Destination | all |
+| Schedule | Always |
+| Service | ALL |
+| Action | ACCEPT |
+| NAT | Enabled |
+
+### Purpose
+
+This is the primary Internet access policy.
+
+It allows devices on the internal LAN (`10.10.10.0/24`) to access external networks through the FortiGate firewall.
+
+Source NAT (SNAT) is enabled so that private IP addresses are translated to the WAN interface IP (`192.168.100.10`) before leaving the network.
+
+Security Profiles
+
+- Web Filter: Block_Socials
+- SSL Inspection: no-inspection
+
+Traffic Statistics
+
+Approximately **645 MB** of traffic has passed through this policy.
+
+---
+
+## 4. Implicit Deny
+
+FortiGate automatically creates an implicit deny rule at the bottom of the policy list.
+
+Any traffic that does not match an existing firewall policy is automatically dropped.
+
+No manual configuration is required.
+
+---
+
+# Policy Processing Order
+
+Firewall policies are evaluated from top to bottom.
+
+1. Block Google DNS
+2. Block Instagram and Facebook (Office Hours)
+3. LAN-to-Internet (Allow)
+4. Implicit Deny
+
+The first matching policy is applied, and no further policies are evaluated.
+
+---
+
+# Network Flow
+
+```
+Windows 11 Client
+10.10.10.10
+        │
+        ▼
+FortiGate LAN (port2)
+        │
+        ▼
+Firewall Policies
+   ├── Block Google DNS
+   ├── Block Facebook & Instagram
+   └── LAN-to-Internet (NAT)
+        │
+        ▼
+FortiGate WAN (port1)
+192.168.100.10
+        │
+        ▼
+VMware NAT Gateway
+192.168.100.2
+        │
+        ▼
+Internet
+```
