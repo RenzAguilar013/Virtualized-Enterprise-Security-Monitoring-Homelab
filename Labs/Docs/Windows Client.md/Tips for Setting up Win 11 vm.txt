@@ -1,4 +1,0 @@
-Windows 11 vm setup 
-
-So you don't have to connect your MS account as i disable the internet on the vm for the setup
-Shift + F10, type OOBE\BYPASSNRO
