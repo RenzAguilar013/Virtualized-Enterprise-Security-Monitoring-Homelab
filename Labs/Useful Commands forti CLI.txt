@@ -17,7 +17,7 @@ show system interface: Shows the saved configuration tree for all
 To get Evaluation License Command
 -----------------------------------------------------------
 
-execute vm-license-options account-id AguilarRenz13@gmail.com #or your email
+execute vm-license-options account-id YOUREMAIL@gmail.com #or your email
 execute vm-license-options account-password xxxxxx
 execute vm-license
 
