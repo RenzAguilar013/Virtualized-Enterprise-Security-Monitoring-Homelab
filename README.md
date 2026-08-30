@@ -29,6 +29,7 @@ The lab is designed to simulate real-world **SOC monitoring, network security, v
 ---
 
 # 🌐 Network Topology
+![Enterprise security homelab topology](assets/topology.png)
 
 ```text
                               Internet
