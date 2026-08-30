@@ -1,0 +1,9 @@
+# Lab Architecture
+
+## Network Topology
+
+![Enterprise security homelab topology](../assets/topology.png)
+
+The lab uses VMware Workstation to host an isolated enterprise-style network.
+FortiGate connects the internal VMnet2 network to the VMware VMnet8 NAT
+network while providing firewalling, routing, NAT and DHCP services.
