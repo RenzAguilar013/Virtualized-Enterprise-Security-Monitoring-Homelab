@@ -2,7 +2,7 @@
 
 ## Policy Order
 
-![Firewall policy list](../screenshots/fortigate/firewall-policy-list.png)
+![Firewall policy list](../screenshots/Fortigate/firewall-policy-list.png)
 
 Firewall rules are evaluated from top to bottom. The first matching rule is
 applied.
