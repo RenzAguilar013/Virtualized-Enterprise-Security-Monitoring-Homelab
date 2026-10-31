@@ -223,7 +223,7 @@ Linux01
 FortiGate
 ```
 
-![Splunk data sources](../screenshots/splunk/splunk-data-sources.png)
+![Splunk data sources](../screenshots/Splunk/splunk-log-sources.png)
 
 ## Dashboard
 
