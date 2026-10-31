@@ -248,7 +248,7 @@ The dashboard includes:
 - FortiGate allowed and denied traffic
 - Log-source health
 
-![Splunk dashboard](../screenshots/splunk/splunk-dashboard-overview.png)
+![Splunk dashboard](../screenshots/Splunk/splunk-dashboard-overview.png)
 
 ## Authentication Monitoring
 
