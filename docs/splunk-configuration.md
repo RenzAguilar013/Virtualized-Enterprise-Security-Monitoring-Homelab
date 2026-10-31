@@ -248,8 +248,9 @@ The dashboard includes:
 - FortiGate allowed and denied traffic
 - Log-source health
 
-![Splunk dashboard](../screenshots/Splunk/splunk-dashboard-overview.png)
-
+![Splunk dashboard](../screenshots/Splunk/splunk-dashboard.png)
+![Splunk dashboard](../screenshots/Splunk/splunk-dashboard-2.png)
+![Splunk dashboard](../screenshots/Splunk/splunk-dashboard-3.png)
 ## Authentication Monitoring
 
 Windows authentication is identified using:
