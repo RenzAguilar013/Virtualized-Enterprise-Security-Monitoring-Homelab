@@ -9,29 +9,29 @@ applied.
 
 ## Block Google DNS
 
-![Block Google DNS policy](../screenshots/fortigate/block-google-dns-policy.png)
+![Block Google DNS policy](../screenshots/Fortigate/block-google-dns-policy.png)
 
 This policy prevents internal clients from communicating directly with Google
 DNS servers such as `8.8.8.8`.
 
 ## Block Social Media
 
-![Social-media policy](../screenshots/fortigate/block-social-media-policy.png)
+![Social-media policy](../screenshots/Fortigate/block-social-media-policy.png)
 
 ## Business-Hours Schedule
 
-![Business-hours schedule](../screenshots/fortigate/business-hours-schedule.png)
+![Business-hours schedule](../screenshots/Fortigate/business-hours-schedule.png)
 
 ## LAN-to-Internet Access
 
-![LAN-to-Internet policy](../screenshots/fortigate/lan-to-internet-policy.png)
+![LAN-to-Internet policy](../screenshots/Fortigate/lan-to-internet-policy.png)
 
 ## Traffic Validation
 
 ### Denied traffic
 
-![Denied traffic](../screenshots/fortigate/denied-traffic-log.png)
+![Denied traffic](../screenshots/Fortigate/denied-traffic-log.png)
 
 ### Allowed traffic
 
-![Allowed traffic](../screenshots/fortigate/allowed-traffic-log.png)
+![Allowed traffic](../screenshots/Fortigate/allowed-traffic-log.png)
