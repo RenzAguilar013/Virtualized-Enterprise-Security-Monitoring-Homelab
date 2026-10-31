@@ -1,0 +1,29 @@
+# Active Directory Configuration
+
+## Server Roles
+
+![AD DS and DNS roles](../screenshots/active-directory/ad-server-manager.png)
+
+DC01 provides Active Directory Domain Services and internal DNS for the lab.
+
+## Organizational Units
+
+![Active Directory OU structure](../screenshots/active-directory/ad-ou-structure.png)
+
+## Users and Groups
+
+![Lab users and groups](../screenshots/active-directory/ad-users-groups.png)
+
+All accounts shown are fictional accounts created for the isolated homelab.
+
+## Domain Computer
+
+![Windows 11 computer account](../screenshots/active-directory/ad-computer-account.png)
+
+## Group Policy
+
+![Group Policy configuration](../screenshots/active-directory/ad-group-policy.png)
+
+## DNS
+
+![Active Directory DNS zone](../screenshots/active-directory/ad-dns-zone.png)
