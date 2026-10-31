@@ -288,7 +288,7 @@ Destination IP
 Destination host
 ```
 
-![Authentication details](../screenshots/splunk/splunk-authentication-activity.png)
+![Authentication details](../screenshots/Splunk/splunk-authentication-activity.png)
 
 ## Brute-Force Detection
 
