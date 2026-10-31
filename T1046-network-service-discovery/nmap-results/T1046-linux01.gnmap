@@ -1,0 +1,4 @@
+# Nmap 7.99 scan initiated Sat Oct 31 12:04:13 2026 as: /usr/lib/nmap/nmap -sS -sV --version-light -T3 -p 21,22,23,25,53,80,110,139,443,445,514,8000,8080,9997 -oA /home/khali/T1046-test/T1046-linux01 10.10.10.50
+Host: 10.10.10.50 ()	Status: Up
+Host: 10.10.10.50 ()	Ports: 21/closed/tcp//ftp///, 22/open/tcp//ssh//OpenSSH 10.2p1 Ubuntu 2ubuntu3.8 (Ubuntu Linux; protocol 2.0)/, 23/closed/tcp//telnet///, 25/closed/tcp//smtp///, 53/closed/tcp//domain///, 80/closed/tcp//http///, 110/closed/tcp//pop3///, 139/closed/tcp//netbios-ssn///, 443/closed/tcp//https///, 445/closed/tcp//microsoft-ds///, 514/closed/tcp//shell///, 8000/closed/tcp//http-alt///, 8080/closed/tcp//http-proxy///, 9997/closed/tcp//palace-6///
+# Nmap done at Sat Oct 31 12:04:14 2026 -- 1 IP address (1 host up) scanned in 0.77 seconds

@@ -1,0 +1,126 @@
+========================================================================
+SEARCH 1 - BASELINE
+Purpose: Confirm whether T1046 scan events already exist.
+========================================================================
+
+index=* host="Linux01" sourcetype="linux:kern" "NMAP_SCAN"
+| table _time host source sourcetype _raw
+| sort -_time
+
+
+========================================================================
+SEARCH 2 - DETAILED SCAN EVENTS
+Purpose: Extract source, destination, protocol and port information.
+========================================================================
+
+index=* host="Linux01" sourcetype="linux:kern" "NMAP_SCAN"
+| rex field=_raw "SRC=(?<SourceIP>\d{1,3}(?:\.\d{1,3}){3})"
+| rex field=_raw "DST=(?<DestinationIP>\d{1,3}(?:\.\d{1,3}){3})"
+| rex field=_raw "PROTO=(?<Protocol>\S+)"
+| rex field=_raw "SPT=(?<SourcePort>\d+)"
+| rex field=_raw "DPT=(?<DestinationPort>\d+)"
+| search SourceIP="10.10.10.40"
+| table _time host SourceIP DestinationIP Protocol SourcePort DestinationPort
+| sort -_time
+
+
+========================================================================
+SEARCH 3 - NETWORK SERVICE DISCOVERY SUMMARY
+Purpose: Identify one source connecting to multiple destination ports.
+========================================================================
+
+index=* host="Linux01" sourcetype="linux:kern" "NMAP_SCAN"
+| rex field=_raw "SRC=(?<SourceIP>\d{1,3}(?:\.\d{1,3}){3})"
+| rex field=_raw "DST=(?<DestinationIP>\d{1,3}(?:\.\d{1,3}){3})"
+| rex field=_raw "PROTO=(?<Protocol>\S+)"
+| rex field=_raw "DPT=(?<DestinationPort>\d+)"
+| stats count AS ConnectionAttempts
+        dc(DestinationPort) AS UniquePorts
+        values(DestinationPort) AS ScannedPorts
+        earliest(_time) AS FirstSeen
+        latest(_time) AS LastSeen
+        BY SourceIP DestinationIP Protocol host
+| where UniquePorts >= 5
+| eval MITRETechnique="T1046 - Network Service Discovery"
+| convert ctime(FirstSeen) ctime(LastSeen)
+| table MITRETechnique SourceIP DestinationIP Protocol host ConnectionAttempts UniquePorts ScannedPorts FirstSeen LastSeen
+| sort -UniquePorts
+
+
+========================================================================
+SEARCH 4 - T1046 SCHEDULED ALERT
+Purpose: Trigger when one source contacts five or more ports in five minutes.
+Recommended schedule: Every minute
+Earliest time: -5m@m
+Latest time: now
+========================================================================
+
+index=* host="Linux01" sourcetype="linux:kern" "NMAP_SCAN"
+| rex field=_raw "SRC=(?<SourceIP>\d{1,3}(?:\.\d{1,3}){3})"
+| rex field=_raw "DST=(?<DestinationIP>\d{1,3}(?:\.\d{1,3}){3})"
+| rex field=_raw "PROTO=(?<Protocol>\S+)"
+| rex field=_raw "DPT=(?<DestinationPort>\d+)"
+| bin _time span=5m
+| stats count AS ConnectionAttempts
+        dc(DestinationPort) AS UniquePorts
+        values(DestinationPort) AS ScannedPorts
+        BY _time SourceIP DestinationIP Protocol host
+| where UniquePorts >= 5
+| eval Severity="MEDIUM"
+| eval Detection="Possible Network Service Discovery"
+| eval MITRETechnique="T1046 - Network Service Discovery"
+| table _time Severity Detection MITRETechnique SourceIP DestinationIP Protocol host ConnectionAttempts UniquePorts ScannedPorts
+
+
+========================================================================
+SEARCH 5 - TOP SCANNING SOURCES
+Purpose: Display the systems contacting the largest number of ports.
+========================================================================
+
+index=* sourcetype="linux:kern" "NMAP_SCAN"
+| rex field=_raw "SRC=(?<SourceIP>\d{1,3}(?:\.\d{1,3}){3})"
+| rex field=_raw "DST=(?<DestinationIP>\d{1,3}(?:\.\d{1,3}){3})"
+| rex field=_raw "DPT=(?<DestinationPort>\d+)"
+| stats count AS ConnectionAttempts
+        dc(DestinationPort) AS UniquePorts
+        values(DestinationPort) AS ScannedPorts
+        BY SourceIP DestinationIP
+| sort -UniquePorts
+
+
+========================================================================
+SEARCH 6 - EVENTS OVER TIME
+Purpose: Dashboard timechart for network service discovery events.
+========================================================================
+
+index=* host="Linux01" sourcetype="linux:kern" "NMAP_SCAN"
+| rex field=_raw "SRC=(?<SourceIP>\d{1,3}(?:\.\d{1,3}){3})"
+| timechart span=5m count BY SourceIP limit=10
+
+
+========================================================================
+SEARCH 7 - FORTIGATE LOCAL TRAFFIC FROM KALI
+Purpose: Find FortiGate local-in logs forwarded to Splunk.
+========================================================================
+
+index=* ("10.10.10.40" AND "10.10.10.1")
+(subtype="local" OR "subtype=\"local\"")
+| rex field=_raw "srcip=\"?(?<SourceIP>[^\"\s]+)"
+| rex field=_raw "dstip=\"?(?<DestinationIP>[^\"\s]+)"
+| rex field=_raw "dstport=(?<DestinationPort>\d+)"
+| rex field=_raw "action=\"?(?<Action>[^\"\s]+)"
+| rex field=_raw "service=\"?(?<Service>[^\"\s]+)"
+| search SourceIP="10.10.10.40" DestinationIP="10.10.10.1"
+| table _time SourceIP DestinationIP DestinationPort Service Action host
+| sort -_time
+
+
+========================================================================
+SEARCH 8 - VERIFY SPLUNK ALERT EXECUTION
+Purpose: Confirm that the scheduled alert executed successfully.
+========================================================================
+
+index=_internal sourcetype=scheduler
+savedsearch_name="Network Service Discovery Detected"
+| table _time savedsearch_name status result_count alert_actions suppressed
+| sort -_time

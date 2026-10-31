@@ -1,0 +1,102 @@
+WAZUH QUERIES
+Exercise: T1046 Network Service Discovery
+Source: Kali Linux 10.10.10.40
+Target: Linux01 10.10.10.50
+
+
+=======================================================================
+QUERY 1 - ALL LINUX01 EVENTS
+=======================================================================
+
+agent.name: "UBUNTU-10.10.10.50"
+
+
+=======================================================================
+QUERY 2 - NMAP SCAN PREFIX
+=======================================================================
+
+agent.name: "UBUNTU-10.10.10.50" AND full_log: "NMAP_SCAN"
+
+
+=======================================================================
+QUERY 3 - EVENTS CONTAINING THE KALI SOURCE IP
+=======================================================================
+
+agent.name: "UBUNTU-10.10.10.50" AND full_log: "10.10.10.40"
+
+
+=======================================================================
+QUERY 4 - NMAP PREFIX AND KALI SOURCE IP
+=======================================================================
+
+agent.name: "UBUNTU-10.10.10.50" AND
+full_log: "NMAP_SCAN" AND
+full_log: "10.10.10.40"
+
+
+=======================================================================
+QUERY 5 - EVENTS CONTAINING THE TARGET IP
+=======================================================================
+
+agent.name: "UBUNTU-10.10.10.50" AND full_log: "10.10.10.50"
+
+
+=======================================================================
+QUERY 6 - FIREWALL-RELATED EVENTS
+=======================================================================
+
+agent.name: "UBUNTU-10.10.10.50" AND
+(rule.groups: "firewall" OR rule.description: *firewall*)
+
+
+=======================================================================
+QUERY 7 - MEDIUM OR HIGHER SEVERITY EVENTS
+=======================================================================
+
+agent.name: "UBUNTU-10.10.10.50" AND rule.level: >=5
+
+
+=======================================================================
+QUERY 8 - CUSTOM T1046 DETECTION
+Use this after creating a custom Wazuh rule mapped to T1046.
+=======================================================================
+
+agent.name: "UBUNTU-10.10.10.50" AND rule.mitre.id: "T1046"
+
+
+=======================================================================
+QUERY 9 - CUSTOM RULE ID
+Replace 100120 if a different custom rule ID is used.
+=======================================================================
+
+agent.name: "UBUNTU-10.10.10.50" AND rule.id: "100120"
+
+
+=======================================================================
+FIELDS TO DISPLAY
+=======================================================================
+
+timestamp
+agent.name
+agent.ip
+rule.id
+rule.level
+rule.description
+rule.groups
+rule.mitre.id
+data.srcip
+data.dstip
+data.dstport
+full_log
+
+
+=======================================================================
+EXPECTED VALUES
+=======================================================================
+
+Agent name: UBUNTU-10.10.10.50
+Source IP: 10.10.10.40
+Destination IP: 10.10.10.50
+Log prefix: NMAP_SCAN
+MITRE technique: T1046
+Activity: Multiple TCP SYN packets to different destination ports
