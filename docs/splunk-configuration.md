@@ -310,7 +310,7 @@ A controlled test was performed from Kali Linux at `10.10.10.40` against the Ubu
 The fictional account used for testing was:
 
 ```text
-LabTestinging
+LabTesting
 ```
 
 ![Brute-force detection](../screenshots/splunk/splunk-bruteforce-detection.png)
