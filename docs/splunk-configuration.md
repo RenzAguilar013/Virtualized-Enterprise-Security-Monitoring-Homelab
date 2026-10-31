@@ -309,7 +309,7 @@ A controlled test was performed from Kali Linux at `10.10.10.40` against the Ubu
 The fictional account used for testing was:
 
 ```text
-labtest
+LabTestinging
 ```
 
 ![Brute-force detection](../screenshots/splunk/splunk-bruteforce-detection.png)
@@ -368,7 +368,7 @@ The fictional group used for controlled testing was:
 SOC-Lab-Analysts
 ```
 
-The `labtest` account was added to and removed from the group.
+The `LabTesting` account was added to and removed from the group.
 
 ![Group membership changes](../screenshots/splunk/splunk-group-membership-changes.png)
 
