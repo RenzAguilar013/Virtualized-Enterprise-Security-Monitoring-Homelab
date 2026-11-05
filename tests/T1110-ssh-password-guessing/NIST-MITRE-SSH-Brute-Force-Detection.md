@@ -246,7 +246,7 @@ index=* host="Linux01"
 
 The baseline was checked using a time range of **Last 15 minutes**.
 
-![Splunk baseline before testing](./screenshots/01-before-test.png)
+![Splunk baseline before testing](./screenshots/before-test.png)
 
 ---
 
