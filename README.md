@@ -77,7 +77,7 @@ Each exercise documents authorization, assets, protection controls, detection, i
 
 | Exercise | ATT&CK mapping | Evidence |
 |---|---|---|
-| [SSH Brute Force Detection](tests/T1110-ssh-brute-force-detection/NIST-MITRE-SSH-Brute-Force-Detection.md) | `T1110`, `T1110.001` | Hydra output, Linux auth logs, Wazuh, Splunk, alert, email, containment and recovery |
+| [SSH Brute Force Detection](tests/T1110-ssh-password-guessing/NIST-MITRE-SSH-Brute-Force-Detection.md) | `T1110`, `T1110.001` | Hydra output, Linux auth logs, Wazuh, Splunk, alert, email, containment and recovery |
 | [Network Service Discovery](tests/T1046-network-service-discovery/NIST-MITRE-Nmap-Network-Service-Discovery.md) | `T1046` | Nmap output, Wireshark PCAP, Linux kernel logs, Wazuh, Splunk, FortiGate, alert, email, containment and recovery |
 | PowerShell Execution Validation | `T1059.001` | Atomic Red Team, Sysmon, PowerShell logging, Sigma and Splunk SPL |
 
