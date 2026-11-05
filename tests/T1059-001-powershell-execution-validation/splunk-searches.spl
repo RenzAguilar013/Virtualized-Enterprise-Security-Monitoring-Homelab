@@ -1,0 +1,94 @@
+# Each numbered section is a separate Splunk search.
+
+# 1. Available Windows telemetry
+index=* host="Renz"
+| stats count AS Events latest(_time) AS LastSeen BY source sourcetype
+| convert ctime(LastSeen)
+| sort - Events
+
+# 2. Sysmon PowerShell process baseline
+index=* host="Renz" earliest=-24h
+(source="*Sysmon*" OR sourcetype="*Sysmon*")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=1
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ParentImage['\"]>(?<ParentProcess>[^<]+)"
+| search Process="*powershell.exe"
+| table _time host EventID ParentProcess Process CommandLine
+| sort - _time
+
+# 3. PowerShell Operational Atomic events
+index=* host="Renz" earliest=-24h
+(source="*PowerShell*" OR sourcetype="*PowerShell*")
+("AtomicRedTeam" OR "FromBase64String" OR "art-marker" OR "Set-Content")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| rex field=_raw "(?s)<Data Name=['\"]ScriptBlockText['\"]>(?<ScriptBlock>.*?)</Data>"
+| eval Evidence=coalesce(ScriptBlock,Message,_raw)
+| table _time host EventID source sourcetype Evidence
+| sort - _time
+
+# 4. Sysmon process creation for the test
+index=* host="Renz" earliest=-24h
+(source="*Sysmon*" OR sourcetype="*Sysmon*")
+("powershell.exe" OR "reg.exe")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=1
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ParentImage['\"]>(?<ParentProcess>[^<]+)"
+| search CommandLine="*AtomicRedTeam*" OR CommandLine="*FromBase64String*" OR CommandLine="*art-marker*" OR CommandLine="*reg.exe add*"
+| table _time host EventID ParentProcess Process CommandLine
+| sort - _time
+
+# 5. Sysmon registry artifacts
+index=* host="Renz" earliest=-24h
+(source="*Sysmon*" OR sourcetype="*Sysmon*") "AtomicRedTeam"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID IN (12,13,14)
+| rex field=_raw "(?i)<Data Name=['\"]TargetObject['\"]>(?<TargetObject>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Details['\"]>(?<Details>[^<]+)"
+| table _time host EventID TargetObject Details
+| sort - _time
+
+# 6. Sysmon FileCreate Event ID 11
+index=* host="Renz" earliest=-24h
+(source="*Sysmon*" OR sourcetype="*Sysmon*") "art-marker.txt"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=11
+| rex field=_raw "(?i)<Data Name=['\"]TargetFilename['\"]>(?<TargetFile>[^<]+)"
+| table _time host EventID TargetFile source sourcetype
+| sort - _time
+
+# 7. Correlated T1059.001 timeline
+index=* host="Renz" earliest=-24h
+((source="*Sysmon*" OR sourcetype="*Sysmon*") OR (source="*PowerShell*" OR sourcetype="*PowerShell*"))
+("AtomicRedTeam" OR "FromBase64String" OR "art-marker.txt" OR "Set-Content")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| eval TelemetrySource=case(match(source,"(?i)Sysmon") OR match(sourcetype,"(?i)Sysmon"),"Sysmon",match(source,"(?i)PowerShell") OR match(sourcetype,"(?i)PowerShell"),"PowerShell",true(),"Other")
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]TargetObject['\"]>(?<TargetObject>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]TargetFilename['\"]>(?<TargetFile>[^<]+)"
+| table _time host TelemetrySource EventID Process CommandLine TargetObject TargetFile
+| sort 0 _time
+
+# 8. Scheduled alert: run every minute over earliest=-5m latest=now
+index=* host="Renz" earliest=-5m latest=now
+(((source="*PowerShell*" OR sourcetype="*PowerShell*") ("FromBase64String" OR "Invoke-Expression" OR "AtomicRedTeam")) OR ((source="*Sysmon*" OR sourcetype="*Sysmon*") ("FromBase64String" OR "AtomicRedTeam" OR "-EncodedCommand" OR " -enc ")))
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| eval TelemetrySource=case(match(source,"(?i)Sysmon") OR match(sourcetype,"(?i)Sysmon"),"Sysmon",match(source,"(?i)PowerShell") OR match(sourcetype,"(?i)PowerShell"),"PowerShell",true(),"Other")
+| where (TelemetrySource="PowerShell" AND EventID IN (4103,4104)) OR (TelemetrySource="Sysmon" AND EventID=1)
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| eval DetectionReason=case(searchmatch("FromBase64String"),"Base64-decoded PowerShell",searchmatch("Invoke-Expression"),"Invoke-Expression execution",searchmatch("AtomicRedTeam"),"Atomic Red Team PowerShell test",searchmatch("-EncodedCommand") OR searchmatch(" -enc "),"Encoded PowerShell command",true(),"Suspicious PowerShell activity")
+| stats count AS MatchingEvents values(EventID) AS EventIDs values(TelemetrySource) AS TelemetrySources values(DetectionReason) AS DetectionReasons values(Process) AS Processes values(CommandLine) AS CommandLines earliest(_time) AS FirstSeen latest(_time) AS LastSeen BY host
+| convert ctime(FirstSeen) ctime(LastSeen)
+| where MatchingEvents > 0
