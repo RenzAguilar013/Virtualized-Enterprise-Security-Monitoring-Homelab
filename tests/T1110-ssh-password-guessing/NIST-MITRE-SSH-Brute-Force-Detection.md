@@ -269,7 +269,7 @@ Command explanation:
 | `-V` | Displays each attempted credential |
 | `ssh://10.10.10.50` | Specifies the authorized SSH target |
 
-![Hydra password-guessing test](./screenshots/02-hydra-password-guessing.png)
+![Hydra password-guessing test](./screenshots/hydra-password-guessing.png)
 
 ---
 
@@ -291,7 +291,7 @@ The events contained:
 - Authentication result: Failed password
 - Service: SSH
 
-![Linux SSH authentication log](./screenshots/03-linux-auth-log.png)
+![Linux SSH authentication log](./screenshots/linux-auth-log.png)
 
 ---
 
@@ -339,7 +339,7 @@ index=* host="Linux01" "Failed password"
 | Last observed | [ENTER TIME] |
 | Splunk host | `Linux01` |
 
-![Splunk failed-login investigation](./screenshots/04-splunk-failed-logins.png)
+![Splunk failed-login investigation](./screenshots/splunk-failed-login.png)
 
 ---
 
@@ -379,7 +379,7 @@ The following fields were reviewed:
 | Rule level | [ENTER RULE LEVEL] |
 | Rule description | [ENTER DESCRIPTION] |
 
-![Wazuh SSH detection](./screenshots/05-wazuh-ssh-detection.png)
+![Wazuh SSH detection](./screenshots/wazuh-ssh-detections.png)
 
 ---
 
@@ -415,7 +415,7 @@ index=* host="Linux01" "Failed password"
 | Severity | High |
 | Actions | Add to Triggered Alerts and Send Email |
 
-![Splunk triggered alert](./screenshots/06-splunk-triggered-alert.png)
+![Splunk triggered alert](./screenshots/splunk-triggered-alert.png)
 
 ---
 
@@ -437,7 +437,7 @@ Splunk sent an SMTP notification containing:
 
 The successful email notification confirmed that the complete detection and notification workflow was operational.
 
-![Splunk brute-force email notification](./screenshots/07-brute-force-email-alert.png)
+![Splunk brute-force email notification](./screenshots/brute-force-email.png)
 
 ---
 
@@ -463,7 +463,7 @@ ssh LabTesting@10.10.10.50
 
 The connection failed or timed out while the containment rule was active.
 
-![Temporary source-IP containment](./screenshots/08-source-ip-contained.png)
+![Temporary source-IP containment](./screenshots/source-contained.png)
 
 ---
 
@@ -501,7 +501,7 @@ whoami
 ip -br address
 ```
 
-![Successful SSH recovery validation](./screenshots/09-ssh-service-recovered.png)
+![Successful SSH recovery validation](./screenshots/ssh-service-recovered.png)
 
 ---
 
@@ -607,15 +607,15 @@ Mapping the activity to MITRE ATT&CK provided a technical description of the sim
 
 ```text
 screenshots/
-├── 01-before-test.png
-├── 02-hydra-password-guessing.png
-├── 03-linux-auth-log.png
-├── 04-splunk-failed-logins.png
-├── 05-wazuh-ssh-detection.png
-├── 06-splunk-triggered-alert.png
-├── 07-brute-force-email-alert.png
-├── 08-source-ip-contained.png
-└── 09-ssh-service-recovered.png
+├── before-test.png
+├── hydra-password-guessing.png
+├── linux-auth-log.png
+├── splunk-failed-login.png
+├── wazuh-ssh-detections.png
+├── splunk-triggered-alert.png
+├── brute-force-email.png
+├── source-contained.png
+└── ssh-service-recovered.png
 ```
 
 ---
