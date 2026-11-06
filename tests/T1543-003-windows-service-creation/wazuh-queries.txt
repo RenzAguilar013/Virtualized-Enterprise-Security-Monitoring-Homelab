@@ -1,0 +1,24 @@
+# Wazuh Threat Hunting DQL queries for T1543.003
+
+# Complete evidence query
+agent.name:"Renz" AND "T1543LabService" AND data.win.system.eventID:("7045" OR "4697" OR "1" OR "12" OR "13" OR "14")
+
+# Native Windows System service-installation event
+agent.name:"Renz" AND data.win.system.eventID:"7045" AND "T1543LabService"
+
+# Windows Security service-installation audit event
+agent.name:"Renz" AND data.win.system.eventID:"4697" AND "T1543LabService"
+
+# Related Sysmon process and registry events
+agent.name:"Renz" AND "T1543LabService" AND data.win.system.eventID:("1" OR "12" OR "13" OR "14")
+
+# Recommended displayed columns
+timestamp
+agent.name
+data.win.system.eventID
+rule.level
+rule.description
+data.win.eventdata.serviceName
+data.win.eventdata.imagePath
+data.win.eventdata.commandLine
+data.win.eventdata.targetObject

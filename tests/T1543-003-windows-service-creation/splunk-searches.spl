@@ -1,0 +1,72 @@
+# Each numbered section is a separate Splunk search.
+
+# 1. Windows telemetry baseline
+index=* host="Renz"
+| stats count AS Events latest(_time) AS LastSeen BY source sourcetype
+| convert ctime(LastSeen)
+| sort - Events
+
+# 2. Broad T1543.003 evidence search
+index=* host="Renz" earliest=-24h
+("T1543LabService" OR "T1543.003 Lab Service")
+| table _time host source sourcetype EventCode _raw
+| sort 0 _time
+
+# 3. Correlated service-creation investigation
+index=* host="Renz" earliest=-24h
+("T1543LabService" OR "T1543.003 Lab Service" OR "sc.exe")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID IN (1,12,13,14,4697,7045)
+| rex field=_raw "(?i)<Data Name=['\"]ServiceName['\"]>(?<ServiceName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ImagePath['\"]>(?<ServicePath>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]TargetObject['\"]>(?<TargetObject>[^<]+)"
+| eval Activity=case(
+    EventID=7045,"Service installed - System",
+    EventID=4697,"Service installed - Security",
+    EventID=1,"Process creation",
+    EventID=12,"Registry object created/deleted",
+    EventID=13,"Registry value modified",
+    EventID=14,"Registry object renamed",
+    true(),"Other")
+| eval Service=coalesce(ServiceName,"T1543LabService")
+| table _time host EventID Activity Service ServicePath Process CommandLine TargetObject source
+| sort 0 _time
+
+# 4. Dashboard panel
+index=* host="Renz" earliest=-24h
+("T1543LabService" OR "T1543.003 Lab Service")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID IN (1,12,13,14,4697,7045)
+| eval Activity=case(
+    EventID=7045,"Service installed - System",
+    EventID=4697,"Service installed - Security",
+    EventID=1,"Process creation",
+    EventID IN (12,13,14),"Registry activity",
+    true(),"Other")
+| table _time host EventID Activity source sourcetype
+| sort - _time
+
+# 5. Scheduled high-severity alert
+index=* host="Renz" earliest=-5m@m latest=now
+(
+    source="*WinEventLog:System*"
+    OR source="*WinEventLog:Security*"
+    OR sourcetype="XmlWinEventLog:System"
+    OR sourcetype="XmlWinEventLog:Security"
+)
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID IN (4697,7045)
+| rex field=_raw "(?i)<Data Name=['\"]ServiceName['\"]>(?<ServiceName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ImagePath['\"]>(?<ServicePath>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ServiceStartType['\"]>(?<StartType>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]SubjectUserName['\"]>(?<CreatedBy>[^<]+)"
+| eval DestinationIP="10.10.10.20"
+| eval MITRETechnique="T1543.003 - Windows Service"
+| eval DetectionReason="A new Windows service was installed"
+| table _time host DestinationIP EventID ServiceName ServicePath StartType CreatedBy MITRETechnique DetectionReason
+| sort - _time

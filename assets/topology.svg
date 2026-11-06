@@ -140,18 +140,22 @@
   <path d="M260 794H330M535 794H605M810 794H880M1085 794H1155" class="arrow"/>
 
   <!-- Completed exercises -->
-  <rect x="25" y="855" width="490" height="95" class="section" stroke="#7c3cc4"/>
+  <rect x="25" y="855" width="370" height="95" class="section" stroke="#7c3cc4"/>
   <text x="45" y="880" class="h purple">T1110.001 • SSH Password Guessing</text>
-  <text x="45" y="903" class="t">Hydra → Linux auth logs → Wazuh/Splunk → email alert</text>
-  <text x="45" y="926" class="s">Source/destination correlation • containment • recovery</text>
-  <rect x="555" y="855" width="490" height="95" class="section" stroke="#1559bd"/>
-  <text x="575" y="880" class="h blue">T1046 • Network Service Discovery</text>
-  <text x="575" y="903" class="t">Nmap → PCAP → Linux/FortiGate telemetry → SIEM alert</text>
-  <text x="575" y="926" class="s">Service validation • source containment • connectivity recovery</text>
-  <rect x="1085" y="855" width="490" height="95" class="section" stroke="#c51d65"/>
-  <text x="1105" y="880" class="h pink">T1059.001 • PowerShell Execution</text>
-  <text x="1105" y="903" class="t">Atomic Red Team → Sysmon/4104 → Splunk dashboard → email</text>
-  <text x="1105" y="926" class="s">Events 1, 11, 12–14, 4103, 4104 • cleanup verified</text>
+  <text x="45" y="903" class="t">Hydra → Linux auth logs → SIEM alert</text>
+  <text x="45" y="926" class="s">IP correlation • containment • recovery</text>
+  <rect x="420" y="855" width="370" height="95" class="section" stroke="#1559bd"/>
+  <text x="440" y="880" class="h blue">T1046 • Network Service Discovery</text>
+  <text x="440" y="903" class="t">Nmap → PCAP → FortiGate/SIEM telemetry</text>
+  <text x="440" y="926" class="s">Service validation • containment • recovery</text>
+  <rect x="815" y="855" width="370" height="95" class="section" stroke="#c51d65"/>
+  <text x="835" y="880" class="h pink">T1059.001 • PowerShell Execution</text>
+  <text x="835" y="903" class="t">Atomic Red Team → Sysmon/4104 → Splunk</text>
+  <text x="835" y="926" class="s">Dashboard • email alert • cleanup verified</text>
+  <rect x="1210" y="855" width="365" height="95" class="section" stroke="#168444"/>
+  <text x="1230" y="880" class="h green">T1543.003 • Windows Service</text>
+  <text x="1230" y="903" class="t">Service → 4697/7045 → Wazuh/Splunk</text>
+  <text x="1230" y="926" class="s">Dashboard • email alert • recovery verified</text>
 
   <rect x="25" y="968" width="1550" height="22" rx="6" fill="#f7f9fc" stroke="#a7b3c5"/>
   <text x="40" y="983" class="s"><tspan class="bold">Status:</tspan> Operational • NIST CSF 2.0: Identify, Protect, Detect, Respond, Recover</text>

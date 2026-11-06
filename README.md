@@ -64,6 +64,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Authored Sigma detections and converted them to Splunk SPL
 - Validated Sysmon Event IDs `1`, `11` and `12-14`
 - Validated PowerShell Operational Event IDs `4103` and `4104`
+- Validated Windows service installation through Security Event `4697`, System Event `7045` and related Sysmon telemetry
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -74,6 +75,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [SSH Brute Force Detection](tests/T1110-ssh-password-guessing/NIST-MITRE-SSH-Brute-Force-Detection.md) | `T1110`, `T1110.001` | Hydra, Linux authentication logs, Wazuh, Splunk, email, containment and recovery |
 | [Network Service Discovery](tests/T1046-network-service-discovery/NIST-MITRE-Nmap-Network-Service-Discovery.md) | `T1046` | Nmap, PCAP, Linux, Wazuh, Splunk, FortiGate, email, containment and recovery |
 | [PowerShell Execution Validation](tests/T1059-001-powershell-execution-validation/NIST-MITRE-PowerShell-Execution-Validation.md) | `T1059.001` | Atomic Red Team, Sysmon, PowerShell logging, Splunk correlation, dashboard, alert, email and cleanup |
+| [Windows Service Creation](tests/T1543-003-windows-service-creation/NIST-MITRE-Windows-Service-Creation.md) | `T1543.003` | Controlled service installation, Events 4697/7045, Sysmon, Wazuh, Splunk, dashboard, email and recovery |
 
 ## Completed response workflows
 
@@ -100,6 +102,15 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 3. Correlated process creation, script block, registry and file-creation telemetry in Splunk.
 4. Created a dashboard panel and high-severity scheduled alert.
 5. Verified the email workflow and removed the Atomic test artifacts.
+
+### Windows service creation
+
+1. Established Windows service and SIEM telemetry baselines on the Windows 11 endpoint.
+2. Enabled service-installation auditing and created a harmless manual-start test service.
+3. Validated Security Event `4697`, System Event `7045` and related Sysmon activity.
+4. Correlated the service name, binary path, user, host and event timeline in Wazuh and Splunk.
+5. Added a Splunk dashboard panel, high-severity scheduled alert and SMTP notification.
+6. Removed the test service and verified service and registry-key recovery.
 
 ## Documentation
 
@@ -147,10 +158,17 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
     ├── T1046-network-service-discovery/
     │   ├── splunk-searches.spl
     │   └── wazuh-queries.txt
-    └── T1059-001-powershell-execution-validation/
-        ├── NIST-MITRE-PowerShell-Execution-Validation.md
+    ├── T1059-001-powershell-execution-validation/
+    │   ├── NIST-MITRE-PowerShell-Execution-Validation.md
+    │   ├── splunk-searches.spl
+    │   └── screenshots/
+    └── T1543-003-windows-service-creation/
+        ├── NIST-MITRE-Windows-Service-Creation.md
         ├── splunk-searches.spl
+        ├── wazuh-queries.txt
         └── screenshots/
+            ├── README.md
+            └── 20 evidence screenshots
 ```
 
 ## Evidence standards
@@ -166,6 +184,7 @@ Only sanitized evidence is published. Passwords, application passwords, API toke
 - Splunk SPL, dashboards, scheduled alerts and email actions
 - Wazuh threat hunting and agent monitoring
 - Detection engineering with Sigma and Atomic Red Team
+- Windows service creation and persistence detection
 - NIST CSF 2.0 and MITRE ATT&CK mapping
 - Vulnerability assessment and packet analysis
 - Incident containment, recovery and technical documentation
