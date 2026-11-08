@@ -1,0 +1,25 @@
+T1053.005 — WINDOWS SCHEDULED TASK THREAT-HUNTING QUERIES
+
+1. Basic task-name search
+agent.name:"Renz" AND "T1053.005-LabTask"
+
+2. Scheduled-task events
+agent.name:"Renz" AND "T1053.005-LabTask" AND data.win.system.eventID:("4698" OR "106" OR "1")
+
+3. Broad fallback search
+agent.name:"Renz" AND ("T1053.005-LabTask" OR "schtasks.exe")
+
+4. Creation and deletion lifecycle
+agent.name:"Renz" AND "T1053.005-LabTask" AND data.win.system.eventID:("4698" OR "4699" OR "106" OR "141" OR "1")
+
+RECOMMENDED COLUMNS
+timestamp
+agent.name
+data.win.system.eventID
+rule.level
+rule.description
+data.win.eventdata.taskName
+data.win.eventdata.image
+data.win.eventdata.commandLine
+data.win.eventdata.parentImage
+

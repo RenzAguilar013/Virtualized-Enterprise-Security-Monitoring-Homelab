@@ -1,0 +1,80 @@
+# T1053.005 — Windows Scheduled Task detection searches
+# Lab host: Renz (10.10.10.20)
+# Controlled task: T1053.005-LabTask
+
+# 1. Broad validation search
+index=* host="Renz" earliest=-4h
+("T1053.005-LabTask" OR "schtasks.exe")
+| table _time host source sourcetype EventCode _raw
+| sort 0 _time
+
+# 2. Correlated creation timeline
+index=* host="Renz" earliest=-4h
+("T1053.005-LabTask" OR "schtasks.exe")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID IN (1,106,4698)
+| rex field=_raw "(?i)<Data Name=['\"]TaskName['\"]>(?<TaskName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ParentImage['\"]>(?<ParentProcess>[^<]+)"
+| eval Activity=case(
+    EventID=4698,"Security: Scheduled task created",
+    EventID=106,"Task Scheduler: Task registered",
+    EventID=1,"Sysmon: Process creation",
+    true(),"Other"
+)
+| eval Task=coalesce(TaskName,"T1053.005-LabTask")
+| table _time host EventID Activity Task Process ParentProcess CommandLine source
+| sort 0 _time
+
+# 3. Dashboard panel
+index=* host="Renz"
+("T1053.005-LabTask" OR "schtasks.exe")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID IN (1,106,4698)
+| rex field=_raw "(?i)<Data Name=['\"]TaskName['\"]>(?<TaskName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| eval Activity=case(
+    EventID=4698,"Scheduled task created",
+    EventID=106,"Task registered",
+    EventID=1,"schtasks process executed",
+    true(),"Other"
+)
+| eval Task=coalesce(TaskName,"T1053.005-LabTask")
+| table _time host EventID Activity Task Process CommandLine
+| sort - _time
+
+# 4. High-severity alert
+# Schedule: */1 * * * *
+# Time range: earliest=-5m@m latest=now
+# Trigger: number of results greater than 0
+# Production throttle: 10 minutes
+index=* host="Renz"
+("T1053.005-LabTask" OR "schtasks.exe")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID IN (106,4698)
+| rex field=_raw "(?i)<Data Name=['\"]TaskName['\"]>(?<TaskName>[^<]+)"
+| eval TaskName=coalesce(TaskName,"T1053.005-LabTask")
+| table _time host EventID TaskName user source
+| sort - _time
+
+# 5. Cleanup and deletion evidence
+index=* host="Renz" earliest=-4h
+"T1053.005-LabTask"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID IN (141,4699)
+| table _time host EventID source sourcetype _raw
+| sort 0 _time
+
+# 6. Alert email troubleshooting
+index=_internal earliest=-15m
+(source="*scheduler.log" OR source="*python.log" OR sourcetype="splunkd")
+("T1053.005" OR "sendemail" OR "smtp")
+| table _time log_level component message _raw
+| sort - _time
+
