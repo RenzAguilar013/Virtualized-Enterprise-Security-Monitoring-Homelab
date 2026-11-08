@@ -163,6 +163,5 @@
 
   <rect x="25" y="968" width="1550" height="22" rx="6" fill="#f7f9fc" stroke="#a7b3c5"/>
   <text x="40" y="983" class="s"><tspan class="bold">Status:</tspan> Operational • NIST CSF 2.0: Identify, Protect, Detect, Respond, Recover</text>
-  <text x="1560" y="983" text-anchor="end" class="s">Updated November 2026</text>
 </svg>
 
