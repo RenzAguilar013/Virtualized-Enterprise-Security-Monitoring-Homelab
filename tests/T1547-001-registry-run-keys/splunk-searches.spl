@@ -1,0 +1,76 @@
+# T1547.001 — Registry Run Keys detection searches
+# Lab host: Renz (10.10.10.20)
+# Controlled value: T1547.001-LabRunKey
+
+# 1. Broad validation search
+index=* host="Renz" earliest=-4h
+"T1547.001-LabRunKey"
+| table _time host source sourcetype EventCode _raw
+| sort - _time
+
+# 2. Detailed Sysmon Event 13 investigation
+index=* host="Renz" earliest=-4h
+(source="*Sysmon*" OR sourcetype="*Sysmon*")
+"T1547.001-LabRunKey"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=13
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]TargetObject['\"]>(?<TargetObject>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Details['\"]>(?<Details>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]User['\"]>(?<User>[^<]+)"
+| table _time host EventID User Process TargetObject Details
+| sort - _time
+
+# 3. Dashboard panel
+index=* host="Renz"
+(source="*Sysmon*" OR sourcetype="*Sysmon*")
+("T1547.001-LabRunKey" OR "CurrentVersion\\Run")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=13
+| rex field=_raw "(?i)<Data Name=['\"]User['\"]>(?<User>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]TargetObject['\"]>(?<TargetObject>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Details['\"]>(?<Details>[^<]+)"
+| eval Activity="Registry Run value modified"
+| table _time host EventID Activity User Process TargetObject Details
+| sort - _time
+
+# 4. High-severity alert
+# Schedule: */1 * * * *
+# Time range: earliest=-5m@m latest=now
+# Trigger: number of results greater than 0
+# Production throttle: 10 minutes
+index=* host="Renz"
+(source="*Sysmon*" OR sourcetype="*Sysmon*")
+("T1547.001-LabRunKey" OR "CurrentVersion\\Run")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=13
+| rex field=_raw "(?i)<Data Name=['\"]User['\"]>(?<User>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]TargetObject['\"]>(?<TargetObject>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Details['\"]>(?<Details>[^<]+)"
+| table _time host EventID User Process TargetObject Details
+| sort - _time
+
+# 5. Cleanup and deletion evidence
+index=* host="Renz" earliest=-4h
+(source="*Sysmon*" OR sourcetype="*Sysmon*")
+"T1547.001-LabRunKey"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=12
+| rex field=_raw "(?i)<Data Name=['\"]EventType['\"]>(?<EventType>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]TargetObject['\"]>(?<TargetObject>[^<]+)"
+| table _time host EventID EventType TargetObject
+| sort - _time
+
+# 6. Email action troubleshooting
+index=_internal earliest=-15m
+(source="*scheduler.log" OR source="*python.log" OR sourcetype="splunkd")
+("T1547.001" OR "sendemail" OR "smtp")
+| table _time log_level component message _raw
+| sort - _time
+

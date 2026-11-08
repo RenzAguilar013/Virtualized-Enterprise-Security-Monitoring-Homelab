@@ -12,7 +12,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 |---|---:|---|
 | FortiGate VM | `10.10.10.1` | LAN gateway, DHCP, firewall, NAT and syslog source |
 | DC01 | `10.10.10.10` | Windows Server, AD DS, DNS, Sysmon, Wazuh agent and Splunk Universal Forwarder |
-| Renz | `10.10.10.20` | Windows 11 endpoint, Sysmon, PowerShell and Task Scheduler logging, Atomic Red Team, Sigma and SIEM agents |
+| Renz | `10.10.10.20` | Windows 11 endpoint, Sysmon registry/process telemetry, PowerShell and Task Scheduler logging, Atomic Red Team, Sigma and SIEM agents |
 | Wazuh | `10.10.10.30` | Manager, indexer, dashboard, correlation and endpoint alerting |
 | Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra and validation tooling |
 | Linux01 | `10.10.10.50` | Ubuntu telemetry host, auditd, FortiGate syslog receiver, Wazuh agent and Splunk Universal Forwarder |
@@ -54,6 +54,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - PowerShell and Sysmon process investigation
 - Windows service-installation monitoring
 - Windows scheduled-task creation and deletion monitoring
+- Windows Registry Run-key persistence monitoring
 - Linux sudo, SSH, execution and file-deletion activity
 - FortiGate denied and local-in traffic analysis
 - Nessus vulnerability scanning and remediation evidence
@@ -67,6 +68,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Validated PowerShell Operational Event IDs `4103` and `4104`
 - Validated Windows service installation through Security Event `4697`, System Event `7045` and related Sysmon telemetry
 - Validated scheduled-task activity through Security Events `4698`/`4699`, Task Scheduler Events `106`/`141` and Sysmon process creation
+- Validated Registry Run-key persistence through Sysmon Events `12` and `13`, Wazuh threat hunting and Splunk correlation
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -79,6 +81,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [PowerShell Execution Validation](tests/T1059-001-powershell-execution-validation/NIST-MITRE-PowerShell-Execution-Validation.md) | `T1059.001` | Atomic Red Team, Sysmon, PowerShell logging, Splunk correlation, dashboard, alert, email and cleanup |
 | [Windows Service Creation](tests/T1543-003-windows-service-creation/NIST-MITRE-Windows-Service-Creation.md) | `T1543.003` | Controlled service installation, Events 4697/7045, Sysmon, Wazuh, Splunk, dashboard, email and recovery |
 | [Windows Scheduled Task](tests/T1053-005-windows-scheduled-task/NIST-MITRE-Windows-Scheduled-Task.md) | `T1053.005` | Controlled task creation, Events 4698/106, Sysmon, Wazuh, Splunk dashboard, high-severity alert, email and recovery |
+| [Registry Run Keys](tests/T1547-001-registry-run-keys/NIST-MITRE-Registry-Run-Keys.md) | `T1547.001` | Controlled HKCU Run-value creation, Sysmon Events 12/13, Wazuh, Splunk dashboard, high-severity alert, email and recovery |
 
 ## Completed response workflows
 
@@ -123,6 +126,15 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 4. Correlated the task name, event ID, process, command line, host and timestamp in Wazuh and Splunk.
 5. Added a Splunk dashboard panel, high-severity scheduled alert and SMTP email notification.
 6. Deleted the task, reviewed Events `4699`/`141`, and verified agent, forwarder and SIEM connectivity.
+
+### Registry Run-key persistence
+
+1. Established a baseline of `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+2. Verified Sysmon registry telemetry with a temporary benign key.
+3. Created a harmless Run value named `T1547.001-LabRunKey` pointing to `cmd.exe /c exit 0`.
+4. Correlated Sysmon Event `13`, the process, user, registry target and value data in Wazuh and Splunk.
+5. Added a Splunk dashboard panel, high-severity scheduled alert and SMTP email notification.
+6. Removed only the test value, reviewed Sysmon deletion telemetry and verified endpoint and SIEM recovery.
 
 ## Documentation
 
@@ -181,13 +193,20 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
     │   └── screenshots/
     │       ├── README.md
     │       └── 20 evidence screenshots
-    └── T1053-005-windows-scheduled-task/
-        ├── NIST-MITRE-Windows-Scheduled-Task.md
+    ├── T1053-005-windows-scheduled-task/
+    │   ├── NIST-MITRE-Windows-Scheduled-Task.md
+    │   ├── splunk-searches.spl
+    │   ├── wazuh-queries.txt
+    │   └── screenshots/
+    │       ├── README.md
+    │       └── 20 evidence screenshots
+    └── T1547-001-registry-run-keys/
+        ├── NIST-MITRE-Registry-Run-Keys.md
         ├── splunk-searches.spl
         ├── wazuh-queries.txt
         └── screenshots/
             ├── README.md
-            └── 20 evidence screenshots
+            └── 15 evidence screenshots
 ```
 
 ## Evidence standards
@@ -205,6 +224,7 @@ Only sanitized evidence is published. Passwords, application passwords, API toke
 - Detection engineering with Sigma and Atomic Red Team
 - Windows service creation and persistence detection
 - Windows scheduled-task persistence detection
+- Windows Registry Run-key persistence detection
 - NIST CSF 2.0 and MITRE ATT&CK mapping
 - Vulnerability assessment and packet analysis
 - Incident containment, recovery and technical documentation
@@ -212,4 +232,5 @@ Only sanitized evidence is published. Passwords, application passwords, API toke
 ## Disclaimer
 
 All security testing documented in this repository was conducted only against privately owned and authorized virtual machines in an isolated homelab. The material is intended for defensive security education and portfolio demonstration.
+
 

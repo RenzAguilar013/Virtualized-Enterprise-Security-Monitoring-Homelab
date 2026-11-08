@@ -1,0 +1,26 @@
+T1547.001 — REGISTRY RUN KEYS THREAT-HUNTING QUERIES
+
+1. Basic controlled-value search
+agent.name:"Renz" AND "T1547.001-LabRunKey"
+
+2. Sysmon registry value-set event
+agent.name:"Renz" AND data.win.system.eventID:"13" AND "T1547.001-LabRunKey"
+
+3. Broad Run-key search
+agent.name:"Renz" AND ("T1547.001-LabRunKey" OR "CurrentVersion\\Run")
+
+4. Creation and deletion lifecycle
+agent.name:"Renz" AND "T1547.001-LabRunKey" AND data.win.system.eventID:("12" OR "13" OR "14")
+
+RECOMMENDED COLUMNS
+timestamp
+agent.name
+data.win.system.eventID
+rule.level
+rule.description
+data.win.eventdata.user
+data.win.eventdata.image
+data.win.eventdata.eventType
+data.win.eventdata.targetObject
+data.win.eventdata.details
+
