@@ -1,0 +1,71 @@
+/*
+MITRE ATT&CK T1562.001 — Linux Impair Defenses
+Endpoint: Linux01 / 10.10.10.50
+Use these searches only with data from the authorized homelab.
+*/
+
+/* 1. Baseline marker */
+index=* "T1562_001_BASELINE"
+| table _time host source sourcetype _raw
+| sort - _time
+
+/* 2. Controlled interruption and recovery timeline */
+index=* host="Linux01" earliest=-30m
+("wazuh-agent" OR "T1562_001_WAZUH_AGENT_STOPPED")
+| eval RawLower=lower(_raw)
+| eval Activity=case(
+    like(RawLower,"%t1562_001_wazuh_agent_stopped%"),"Controlled impairment marker",
+    like(RawLower,"%service_stop%") AND like(RawLower,"%wazuh-agent%"),"Wazuh Agent stopped",
+    like(RawLower,"%systemctl%") AND like(RawLower,"%stop%") AND like(RawLower,"%wazuh-agent%"),"Agent stop command",
+    like(RawLower,"%systemd-run%") AND like(RawLower,"%t1562-wazuh-recovery%"),"Automatic recovery scheduled",
+    like(RawLower,"%service_start%") AND like(RawLower,"%wazuh-agent%"),"Wazuh Agent started",
+    like(RawLower,"%systemctl%") AND like(RawLower,"%start%") AND like(RawLower,"%wazuh-agent%"),"Agent start command",
+    true(),"Other related event")
+| where Activity!="Other related event"
+| eval MITRE="T1562.001"
+| table _time host MITRE Activity source sourcetype
+| sort 0 _time
+
+/* 3. Dashboard panel: activity counts over time */
+index=* host="Linux01" earliest=-24h
+("wazuh-agent" OR "T1562_001_WAZUH_AGENT_STOPPED")
+| eval RawLower=lower(_raw)
+| eval Activity=case(
+    like(RawLower,"%t1562_001_wazuh_agent_stopped%"),"Controlled impairment marker",
+    like(RawLower,"%systemctl%") AND like(RawLower,"%stop%") AND like(RawLower,"%wazuh-agent%"),"Agent stop command",
+    like(RawLower,"%service_stop%") AND like(RawLower,"%wazuh-agent%"),"Agent stopped",
+    like(RawLower,"%systemctl%") AND like(RawLower,"%start%") AND like(RawLower,"%wazuh-agent%"),"Agent start command",
+    like(RawLower,"%service_start%") AND like(RawLower,"%wazuh-agent%"),"Agent started",
+    true(),"Other")
+| where Activity!="Other"
+| timechart span=5m count by Activity
+
+/* 4. Scheduled alert: controlled Wazuh Agent impairment */
+index=* host="Linux01"
+("T1562_001_WAZUH_AGENT_STOPPED" OR "wazuh-agent")
+| eval RawLower=lower(_raw)
+| where like(RawLower,"%t1562_001_wazuh_agent_stopped%")
+    OR (like(RawLower,"%systemctl%") AND like(RawLower,"%stop%") AND like(RawLower,"%wazuh-agent%"))
+    OR (like(RawLower,"%service_stop%") AND like(RawLower,"%wazuh-agent%"))
+| eval EvidenceType=case(
+    like(RawLower,"%t1562_001_wazuh_agent_stopped%"),"Controlled impairment marker",
+    like(RawLower,"%service_stop%"),"Wazuh Agent service stopped",
+    true(),"Wazuh Agent stop command")
+| eval MITRE="T1562.001"
+| table _time host MITRE EvidenceType source sourcetype
+| sort - _time
+
+/* 5. Email-action troubleshooting */
+index=_internal earliest=-15m
+(source="*scheduler.log" OR source="*python.log" OR sourcetype="splunkd")
+("T1562.001" OR "sendemail" OR "smtp")
+| table _time log_level component message _raw
+| sort - _time
+
+/* 6. Linux01 recovery and recent telemetry */
+index=* host="Linux01" earliest=-15m
+| stats count AS Events latest(_time) AS LastSeen values(source) AS Sources values(sourcetype) AS Sourcetypes BY host
+| eval MinutesSinceLastEvent=round((now()-LastSeen)/60,1)
+| convert ctime(LastSeen)
+| table host Events LastSeen MinutesSinceLastEvent Sources Sourcetypes
+

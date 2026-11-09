@@ -1,0 +1,40 @@
+MITRE ATT&CK T1562.001 — Linux Impair Defenses
+Wazuh Threat Hunting queries for Linux01
+
+Set the time range to cover the test before running these DQL searches.
+
+1. Broad Linux01 service and marker search
+agent.name:"UBUNTU-10.10.10.50" AND ("wazuh-agent" OR "T1562_001_WAZUH_AGENT_STOPPED")
+
+2. systemctl status and recovery activity
+agent.name:"UBUNTU-10.10.10.50" AND "systemctl" AND ("wazuh-agent" OR "is-active")
+
+3. auditd execution records for systemctl
+agent.name:"UBUNTU-10.10.10.50" AND data.audit.command:"systemctl"
+
+4. sudo activity involving the Wazuh Agent
+agent.name:"UBUNTU-10.10.10.50" AND "sudo" AND "wazuh-agent"
+
+5. Post-recovery agent events
+agent.name:"UBUNTU-10.10.10.50" AND rule.groups:"syslog"
+
+Recommended columns:
+- timestamp
+- agent.name
+- rule.id
+- rule.level
+- rule.description
+- full_log
+- data.audit.exe
+- data.audit.command
+- data.audit.cwd
+- data.audit.uid
+
+Important observation:
+The exact stop event or controlled marker may be absent from Wazuh because the
+Wazuh Agent was the service being stopped and could not forward its own pending
+events while impaired. Treat this as a documented telemetry gap. Use the auditd,
+auth.log and systemd evidence forwarded independently to Splunk as the primary
+evidence for the interruption, then use Wazuh for reconnection and post-recovery
+validation.
+

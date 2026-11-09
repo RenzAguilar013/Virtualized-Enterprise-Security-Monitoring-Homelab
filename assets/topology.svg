@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1100" viewBox="0 0 1600 1100">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#243b64"/></marker>
     <filter id="soft" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#1e3a5f" flood-opacity=".12"/></filter>
@@ -12,7 +12,7 @@
       .badge{rx:5}.white{fill:#fff}.bold{font-weight:700}
     </style>
   </defs>
-  <rect width="1600" height="1000" fill="#fff"/>
+  <rect width="1600" height="1100" fill="#fff"/>
 
   <!-- Header -->
   <g transform="translate(18 15)">
@@ -101,7 +101,7 @@
     <text x="68" y="58" class="h orange">Wazuh SIEM</text><text x="68" y="80" class="ip navy">10.10.10.30</text>
     <text x="16" y="111" class="t">• Manager, indexer and dashboard</text><text x="16" y="131" class="t">• Endpoint correlation and detection</text>
     <text x="16" y="151" class="t">• Threat hunting and agent health</text><text x="16" y="171" class="t">• Vulnerability findings</text>
-    <text x="16" y="191" class="t">• Authentication, auditd and persistence alerts</text>
+    <text x="16" y="191" class="t">• Authentication, persistence and agent health</text>
     <rect x="16" y="200" width="118" height="17" class="badge" fill="#fff0eb"/><text x="75" y="212" text-anchor="middle" class="s bold orange">ENDPOINT SIEM</text>
   </g>
   <g transform="translate(895 420)">
@@ -110,7 +110,7 @@
     <text x="68" y="58" class="h orange">Linux01 • Ubuntu</text><text x="68" y="80" class="ip navy">10.10.10.50</text>
     <text x="16" y="111" class="t">• auditd execution and file telemetry</text><text x="16" y="131" class="t">• SSH, sudo, auth and system logs</text>
     <text x="16" y="151" class="t">• FortiGate syslog receiver :514</text><text x="16" y="171" class="t">• Splunk Universal Forwarder</text>
-    <text x="16" y="191" class="t">• Wazuh Agent</text>
+    <text x="16" y="191" class="s">• Wazuh Agent • T1562.001 validation</text>
     <rect x="16" y="200" width="142" height="17" class="badge" fill="#fff7e5"/><text x="87" y="212" text-anchor="middle" class="s bold orange">LINUX TELEMETRY</text>
   </g>
   <g transform="translate(1185 420)">
@@ -118,7 +118,7 @@
     <rect x="15" y="51" width="42" height="42" rx="8" fill="#168444"/><text x="36" y="78" text-anchor="middle" class="h white">S</text>
     <text x="68" y="58" class="h green">Splunk Enterprise</text><text x="68" y="80" class="ip navy">10.10.10.60</text>
     <text x="16" y="111" class="t">• Centralized indexing, searching and correlation</text><text x="16" y="131" class="t">• Authentication, Sysmon, PowerShell and auditd</text>
-    <text x="16" y="151" class="t">• FortiGate, Task Scheduler and registry investigation</text><text x="16" y="171" class="t">• Dashboards and scheduled alerts</text>
+    <text x="16" y="151" class="t">• Firewall, persistence and agent-stop investigation</text><text x="16" y="171" class="t">• Dashboards and scheduled alerts</text>
     <text x="16" y="191" class="t">• SMTP email notification actions</text>
     <rect x="16" y="200" width="142" height="17" class="badge" fill="#ecf9f0"/><text x="87" y="212" text-anchor="middle" class="s bold green">CENTRAL SIEM</text>
   </g>
@@ -140,34 +140,40 @@
   <path d="M260 794H330M535 794H605M810 794H880M1085 794H1155" class="arrow"/>
 
   <!-- Completed exercises -->
-  <rect x="25" y="855" width="245" height="95" class="section" stroke="#7c3cc4"/>
-  <text x="39" y="880" class="s bold purple">T1110.001 • SSH Password Guessing</text>
-  <text x="39" y="903" class="s">Hydra → Linux auth → SIEM</text>
-  <text x="39" y="926" class="s">Containment • recovery</text>
-  <rect x="285" y="855" width="245" height="95" class="section" stroke="#1559bd"/>
-  <text x="299" y="880" class="s bold blue">T1046 • Network Service Discovery</text>
-  <text x="299" y="903" class="s">Nmap → PCAP → FortiGate</text>
-  <text x="299" y="926" class="s">Validation • recovery</text>
-  <rect x="545" y="855" width="245" height="95" class="section" stroke="#c51d65"/>
-  <text x="559" y="880" class="s bold pink">T1059.001 • PowerShell Execution</text>
-  <text x="559" y="903" class="s">Atomic Red Team → Sysmon</text>
-  <text x="559" y="926" class="s">Dashboard • email • cleanup</text>
-  <rect x="805" y="855" width="245" height="95" class="section" stroke="#168444"/>
-  <text x="819" y="880" class="s bold green">T1543.003 • Windows Service</text>
-  <text x="819" y="903" class="s">Service → 4697 / 7045 → SIEM</text>
-  <text x="819" y="926" class="s">Dashboard • email • recovery</text>
-  <rect x="1065" y="855" width="245" height="95" class="section" stroke="#d68a00"/>
-  <text x="1079" y="880" class="s bold orange">T1053.005 • Scheduled Task</text>
-  <text x="1079" y="903" class="s">schtasks → 4698 / 106 → SIEM</text>
-  <text x="1079" y="926" class="s">Dashboard • email • recovery</text>
-  <rect x="1325" y="855" width="250" height="95" class="section" stroke="#8a3fb0"/>
-  <text x="1339" y="880" class="s bold purple">T1547.001 • Registry Run Keys</text>
-  <text x="1339" y="903" class="s">Run key → Sysmon 12 / 13 → SIEM</text>
-  <text x="1339" y="926" class="s">Dashboard • email • cleanup</text>
+  <rect x="25" y="855" width="370" height="95" class="section" stroke="#7c3cc4"/>
+  <text x="45" y="880" class="h purple">T1110.001 • SSH Password Guessing</text>
+  <text x="45" y="903" class="t">Hydra → Linux authentication → SIEM alert</text>
+  <text x="45" y="926" class="s">IP correlation • containment • recovery</text>
+  <rect x="420" y="855" width="370" height="95" class="section" stroke="#1559bd"/>
+  <text x="440" y="880" class="h blue">T1046 • Network Service Discovery</text>
+  <text x="440" y="903" class="t">Nmap → PCAP → FortiGate / SIEM telemetry</text>
+  <text x="440" y="926" class="s">Service validation • containment • recovery</text>
+  <rect x="815" y="855" width="370" height="95" class="section" stroke="#c51d65"/>
+  <text x="835" y="880" class="h pink">T1059.001 • PowerShell Execution</text>
+  <text x="835" y="903" class="t">Atomic Red Team → Sysmon / 4104 → Splunk</text>
+  <text x="835" y="926" class="s">Dashboard • email alert • cleanup</text>
+  <rect x="1210" y="855" width="365" height="95" class="section" stroke="#168444"/>
+  <text x="1230" y="880" class="h green">T1543.003 • Windows Service</text>
+  <text x="1230" y="903" class="t">Service → 4697 / 7045 → Wazuh / Splunk</text>
+  <text x="1230" y="926" class="s">Dashboard • email alert • recovery</text>
 
-  <rect x="25" y="968" width="1550" height="22" rx="6" fill="#f7f9fc" stroke="#a7b3c5"/>
-  <text x="40" y="983" class="s"><tspan class="bold">Status:</tspan> Operational • NIST CSF 2.0: Identify, Protect, Detect, Respond, Recover</text>
-  <text x="1560" y="983" text-anchor="end" class="s">Updated November 2026</text>
+  <rect x="25" y="960" width="500" height="90" class="section" stroke="#d68a00"/>
+  <text x="45" y="985" class="h orange">T1053.005 • Windows Scheduled Task</text>
+  <text x="45" y="1008" class="t">schtasks → Events 4698 / 106 → Wazuh / Splunk</text>
+  <text x="45" y="1031" class="s">Dashboard • high-severity alert • email • recovery</text>
+  <rect x="550" y="960" width="500" height="90" class="section" stroke="#8a3fb0"/>
+  <text x="570" y="985" class="h purple">T1547.001 • Registry Run Keys</text>
+  <text x="570" y="1008" class="t">HKCU Run value → Sysmon Events 12 / 13 → SIEM</text>
+  <text x="570" y="1031" class="s">Dashboard • email alert • safe cleanup</text>
+  <rect x="1075" y="960" width="500" height="90" class="section" stroke="#e65018"/>
+  <text x="1095" y="985" class="h orange">T1562.001 • Linux Impair Defenses</text>
+  <text x="1095" y="1008" class="t">Wazuh Agent stop → auditd / systemd → Splunk</text>
+  <text x="1095" y="1031" class="s">Independent detection • auto-recovery • email alert</text>
+
+  <rect x="25" y="1068" width="1550" height="22" rx="6" fill="#f7f9fc" stroke="#a7b3c5"/>
+  <text x="40" y="1083" class="s"><tspan class="bold">Status:</tspan> Operational • NIST CSF 2.0: Identify, Protect, Detect, Respond, Recover</text>
+  <text x="1560" y="1083" text-anchor="end" class="s">Updated November 2026</text>
 </svg>
+
 
 
