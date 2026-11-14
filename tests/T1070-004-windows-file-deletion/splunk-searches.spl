@@ -1,0 +1,79 @@
+/* MITRE ATT&CK T1070.004 — Windows File Deletion */
+
+/* 1. Sysmon Event 11: marker-file creation */
+index=* host="Renz" earliest=-30m
+(source="*Sysmon*" OR sourcetype="*Sysmon*")
+"T1070_004_marker.txt"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=11
+| rex field=_raw "(?i)<Data Name=['\"]TargetFilename['\"]>(?<TargetFilename>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]User['\"]>(?<User>[^<]+)"
+| table _time host EventID User Process TargetFilename
+| sort - _time
+
+/* 2. Security Event 4663: deletion detection */
+index=* host="Renz" earliest=-30m
+sourcetype IN ("XmlWinEventLog:Security","WinEventLog:Security")
+"T1070_004_marker.txt"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=4663
+| rex field=_raw "(?i)<Data Name=['\"]SubjectUserName['\"]>(?<User>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ObjectName['\"]>(?<ObjectName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ProcessName['\"]>(?<ProcessName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]AccessList['\"]>(?<AccessRequested>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]AccessMask['\"]>(?<AccessMask>[^<]+)"
+| eval MITRE="T1070.004", Activity="Windows File Deletion"
+| table _time host MITRE Activity EventID User ProcessName ObjectName AccessRequested AccessMask
+| sort - _time
+
+/* 3. Related Events 4663 and 4660 */
+index=* host="Renz" earliest=-30m
+sourcetype IN ("XmlWinEventLog:Security","WinEventLog:Security")
+(EventCode=4663 OR EventCode=4660 OR "<EventID>4663</EventID>" OR "<EventID>4660</EventID>")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| table _time host EventID user source sourcetype _raw
+| sort - _time
+
+/* 4. Dashboard panel */
+index=* host="Renz" earliest=-24h
+sourcetype IN ("XmlWinEventLog:Security","WinEventLog:Security")
+"Lab-T1070"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=4663
+| rex field=_raw "(?i)<Data Name=['\"]SubjectUserName['\"]>(?<User>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ObjectName['\"]>(?<ObjectName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ProcessName['\"]>(?<ProcessName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]AccessList['\"]>(?<AccessRequested>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]AccessMask['\"]>(?<AccessMask>[^<]+)"
+| eval MITRE="T1070.004", Activity="Windows File Deletion"
+| table _time host MITRE Activity EventID User ProcessName ObjectName AccessRequested AccessMask
+| sort - _time
+
+/* 5. Scheduled alert */
+index=* host="Renz"
+sourcetype IN ("XmlWinEventLog:Security","WinEventLog:Security")
+"Lab-T1070"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=4663
+| rex field=_raw "(?i)<Data Name=['\"]SubjectUserName['\"]>(?<User>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ObjectName['\"]>(?<ObjectName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ProcessName['\"]>(?<ProcessName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]AccessList['\"]>(?<AccessRequested>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]AccessMask['\"]>(?<AccessMask>[^<]+)"
+| eval MITRE="T1070.004", Severity="High"
+| table _time host MITRE Severity EventID User ProcessName ObjectName AccessRequested AccessMask
+| sort - _time
+
+/* 6. Email-action troubleshooting */
+index=_internal earliest=-15m
+(source="*scheduler.log" OR source="*python.log" OR sourcetype="splunkd")
+("T1070.004" OR "Windows File Deletion" OR "sendemail" OR "smtp")
+| table _time log_level component message _raw
+| sort - _time
+

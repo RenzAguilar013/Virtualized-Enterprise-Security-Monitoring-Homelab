@@ -1,0 +1,41 @@
+MITRE ATT&CK T1070.004 — Windows File Deletion
+Endpoint: Renz / 10.10.10.20
+
+Set the Threat Hunting time range to cover the controlled test.
+
+1. Exact marker filename
+agent.name:"Renz" AND "T1070_004_marker.txt"
+
+2. Event 4663 with the exact object path
+agent.name:"Renz" AND data.win.system.eventID:"4663" AND data.win.eventdata.objectName:"C:\\Lab-T1070\\T1070_004_marker.txt"
+
+3. Event 4663 with DELETE access mask
+agent.name:"Renz" AND data.win.system.eventID:"4663" AND data.win.eventdata.accessMask:"0x10000"
+
+4. Actual object-deletion event
+agent.name:"Renz" AND data.win.system.eventID:"4660"
+
+5. Both deletion-related events
+agent.name:"Renz" AND (data.win.system.eventID:"4663" OR data.win.system.eventID:"4660")
+
+6. Raw-log filename search
+agent.name:"Renz" AND full_log:*T1070_004_marker.txt*
+
+Recommended columns:
+- timestamp
+- agent.name
+- rule.id
+- rule.level
+- rule.description
+- data.win.system.eventID
+- data.win.eventdata.subjectUserName
+- data.win.eventdata.processName
+- data.win.eventdata.objectName
+- data.win.eventdata.accessList
+- data.win.eventdata.accessMask
+- full_log
+
+If no matching documents appear in wazuh-alerts-*, repeat the searches in
+wazuh-archives-* when archives are enabled. Event 4663 may be collected without
+being promoted to an alert by the default ruleset.
+

@@ -91,7 +91,7 @@
     <rect x="15" y="51" width="42" height="42" rx="6" fill="#1278d1"/><text x="36" y="78" text-anchor="middle" class="h white">WIN</text>
     <text x="68" y="58" class="h blue">Renz • Windows 11</text><text x="68" y="80" class="ip navy">10.10.10.20</text>
     <text x="16" y="111" class="t">• Sysmon Events 1, 11 and 12–14</text><text x="16" y="131" class="t">• PowerShell Events 4103 / 4104</text>
-    <text x="16" y="151" class="t">• Atomic Red Team + Sigma</text><text x="16" y="171" class="s">• ATT&amp;CK execution and persistence validation</text>
+    <text x="16" y="151" class="t">• Atomic Red Team + Sigma</text><text x="16" y="171" class="s">• Execution, persistence and file-deletion validation</text>
     <text x="16" y="191" class="t">• Wazuh Agent + Splunk Forwarder</text>
     <rect x="16" y="200" width="152" height="17" class="badge" fill="#e8f8ee"/><text x="92" y="212" text-anchor="middle" class="s bold green">DETECTION VALIDATED</text>
   </g>
@@ -118,7 +118,7 @@
     <rect x="15" y="51" width="42" height="42" rx="8" fill="#168444"/><text x="36" y="78" text-anchor="middle" class="h white">S</text>
     <text x="68" y="58" class="h green">Splunk Enterprise</text><text x="68" y="80" class="ip navy">10.10.10.60</text>
     <text x="16" y="111" class="t">• Centralized indexing, searching and correlation</text><text x="16" y="131" class="t">• Authentication, Sysmon, PowerShell and auditd</text>
-    <text x="16" y="151" class="t">• Firewall, persistence and agent-stop investigation</text><text x="16" y="171" class="t">• Dashboards and scheduled alerts</text>
+    <text x="16" y="151" class="t">• Firewall, persistence, agent-stop and file deletion</text><text x="16" y="171" class="t">• Dashboards and scheduled alerts</text>
     <text x="16" y="191" class="t">• SMTP email notification actions</text>
     <rect x="16" y="200" width="142" height="17" class="badge" fill="#ecf9f0"/><text x="87" y="212" text-anchor="middle" class="s bold green">CENTRAL SIEM</text>
   </g>
@@ -157,18 +157,22 @@
   <text x="1230" y="903" class="t">Service → 4697 / 7045 → Wazuh / Splunk</text>
   <text x="1230" y="926" class="s">Dashboard • email alert • recovery</text>
 
-  <rect x="25" y="960" width="500" height="90" class="section" stroke="#d68a00"/>
+  <rect x="25" y="960" width="370" height="90" class="section" stroke="#d68a00"/>
   <text x="45" y="985" class="h orange">T1053.005 • Windows Scheduled Task</text>
   <text x="45" y="1008" class="t">schtasks → Events 4698 / 106 → Wazuh / Splunk</text>
   <text x="45" y="1031" class="s">Dashboard • high-severity alert • email • recovery</text>
-  <rect x="550" y="960" width="500" height="90" class="section" stroke="#8a3fb0"/>
-  <text x="570" y="985" class="h purple">T1547.001 • Registry Run Keys</text>
-  <text x="570" y="1008" class="t">HKCU Run value → Sysmon Events 12 / 13 → SIEM</text>
-  <text x="570" y="1031" class="s">Dashboard • email alert • safe cleanup</text>
-  <rect x="1075" y="960" width="500" height="90" class="section" stroke="#e65018"/>
-  <text x="1095" y="985" class="h orange">T1562.001 • Linux Impair Defenses</text>
-  <text x="1095" y="1008" class="t">Wazuh Agent stop → auditd / systemd → Splunk</text>
-  <text x="1095" y="1031" class="s">Independent detection • auto-recovery • email alert</text>
+  <rect x="420" y="960" width="370" height="90" class="section" stroke="#8a3fb0"/>
+  <text x="440" y="985" class="h purple">T1547.001 • Registry Run Keys</text>
+  <text x="440" y="1008" class="t">HKCU Run → Sysmon 12 / 13 → SIEM</text>
+  <text x="440" y="1031" class="s">Dashboard • email alert • safe cleanup</text>
+  <rect x="815" y="960" width="370" height="90" class="section" stroke="#e65018"/>
+  <text x="835" y="985" class="h orange">T1562.001 • Linux Impair Defenses</text>
+  <text x="835" y="1008" class="t">Wazuh stop → auditd / systemd → Splunk</text>
+  <text x="835" y="1031" class="s">Independent detection • auto-recovery • email</text>
+  <rect x="1210" y="960" width="365" height="90" class="section" stroke="#1559bd"/>
+  <text x="1230" y="985" class="h blue">T1070.004 • Windows File Deletion</text>
+  <text x="1230" y="1008" class="t">Marker file → Events 4663 / 4660 → SIEM</text>
+  <text x="1230" y="1031" class="s">Hash baseline • dashboard • alert • cleanup</text>
 
   <rect x="25" y="1068" width="1550" height="22" rx="6" fill="#f7f9fc" stroke="#a7b3c5"/>
   <text x="40" y="1083" class="s"><tspan class="bold">Status:</tspan> Operational • NIST CSF 2.0: Identify, Protect, Detect, Respond, Recover</text>

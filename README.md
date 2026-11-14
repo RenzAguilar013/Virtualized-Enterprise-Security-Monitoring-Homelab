@@ -12,7 +12,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 |---|---:|---|
 | FortiGate VM | `10.10.10.1` | LAN gateway, DHCP, firewall, NAT and syslog source |
 | DC01 | `10.10.10.10` | Windows Server, AD DS, DNS, Sysmon, Wazuh agent and Splunk Universal Forwarder |
-| Renz | `10.10.10.20` | Windows 11 endpoint, Sysmon registry/process telemetry, PowerShell and Task Scheduler logging, Atomic Red Team, Sigma and SIEM agents |
+| Renz | `10.10.10.20` | Windows 11 endpoint, Sysmon registry/process telemetry, PowerShell, Task Scheduler and scoped file-system auditing, Atomic Red Team, Sigma and SIEM agents |
 | Wazuh | `10.10.10.30` | Manager, indexer, dashboard, correlation and endpoint alerting |
 | Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra and validation tooling |
 | Linux01 | `10.10.10.50` | Ubuntu telemetry host, auditd, FortiGate syslog receiver, Wazuh agent, Splunk Universal Forwarder and controlled agent-health validation |
@@ -55,6 +55,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Windows service-installation monitoring
 - Windows scheduled-task creation and deletion monitoring
 - Windows Registry Run-key persistence monitoring
+- Windows file creation and deletion monitoring through Sysmon Event `11` and Security Events `4663`/`4660`
 - Linux sudo, SSH, execution and file-deletion activity
 - Linux security-agent interruption and recovery monitoring
 - FortiGate denied and local-in traffic analysis
@@ -71,6 +72,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Validated scheduled-task activity through Security Events `4698`/`4699`, Task Scheduler Events `106`/`141` and Sysmon process creation
 - Validated Registry Run-key persistence through Sysmon Events `12` and `13`, Wazuh threat hunting and Splunk correlation
 - Validated Linux defense impairment by stopping the Wazuh Agent while auditd and Splunk remained active, then verifying automated recovery
+- Validated controlled Windows file deletion using a SHA-256 baseline, scoped Object Access auditing, Security Events `4663`/`4660`, Wazuh review and Splunk correlation
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -85,6 +87,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [Windows Scheduled Task](tests/T1053-005-windows-scheduled-task/NIST-MITRE-Windows-Scheduled-Task.md) | `T1053.005` | Controlled task creation, Events 4698/106, Sysmon, Wazuh, Splunk dashboard, high-severity alert, email and recovery |
 | [Registry Run Keys](tests/T1547-001-registry-run-keys/NIST-MITRE-Registry-Run-Keys.md) | `T1547.001` | Controlled HKCU Run-value creation, Sysmon Events 12/13, Wazuh, Splunk dashboard, high-severity alert, email and recovery |
 | [Linux Impair Defenses](tests/T1562-001-impair-defenses/NIST-MITRE-Linux-Impair-Defenses.md) | `T1562.001` | Controlled Wazuh Agent interruption, systemd and auditd evidence, independent Splunk detection, alert, email and recovery |
+| [Windows File Deletion](tests/T1070-004-windows-file-deletion/NIST-MITRE-Windows-File-Deletion.md) | `T1070.004` | Controlled marker-file deletion, SHA-256 baseline, Events 4663/4660, Wazuh investigation, Splunk dashboard, alert, email and cleanup |
 
 ## Completed response workflows
 
@@ -148,6 +151,16 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 5. Documented that Wazuh could not reliably report its own stop command while impaired, demonstrating the value of independent telemetry.
 6. Added a Splunk dashboard panel, high-severity alert and SMTP notification.
 7. Verified Wazuh reconnection, SIEM connectivity, enabled services and the absence of failed systemd units.
+
+### Windows file deletion
+
+1. Established Windows endpoint, monitoring-service, event-channel and Splunk telemetry baselines.
+2. Confirmed the active Sysmon configuration did not include FileDelete rules and preserved the existing configuration.
+3. Enabled Windows File System auditing and applied a deletion SACL only to `C:\Lab-T1070`.
+4. Created a harmless marker file, recorded its SHA-256 hash and confirmed Sysmon Event `11` for file creation.
+5. Deleted only the marker file and validated Security Event `4663` with DELETE access and related Event `4660` activity.
+6. Investigated the event in Wazuh and Splunk, then added a dashboard panel, high-severity scheduled alert and SMTP notification.
+7. Removed the temporary SACL and test folder and verified Sysmon, Wazuh and the Splunk Forwarder remained healthy.
 
 ## Documentation
 
@@ -220,13 +233,19 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
     │   └── screenshots/
     │       ├── README.md
     │       └── 15 evidence screenshots
-    └── T1562-001-impair-defenses/
+    ├── T1562-001-impair-defenses/
         ├── NIST-MITRE-Linux-Impair-Defenses.md
         ├── splunk-searches.spl
         ├── wazuh-queries.txt
         └── screenshots/
             ├── README.md
             └── 14 evidence screenshots
+    └── T1070-004-windows-file-deletion/
+        ├── NIST-MITRE-Windows-File-Deletion.md
+        ├── splunk-searches.spl
+        ├── wazuh-queries.txt
+        └── screenshots/
+            └── README.md
 ```
 
 ## Evidence standards
@@ -246,6 +265,7 @@ Only sanitized evidence is published. Passwords, application passwords, API toke
 - Windows scheduled-task persistence detection
 - Windows Registry Run-key persistence detection
 - Linux security-agent impairment, independent detection and recovery validation
+- Windows Object Access auditing and controlled file-deletion detection
 - NIST CSF 2.0 and MITRE ATT&CK mapping
 - Vulnerability assessment and packet analysis
 - Incident containment, recovery and technical documentation
