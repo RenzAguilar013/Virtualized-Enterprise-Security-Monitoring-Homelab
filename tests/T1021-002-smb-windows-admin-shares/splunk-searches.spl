@@ -1,0 +1,86 @@
+/* MITRE ATT&CK T1021.002 — SMB/Windows Admin Shares */
+
+/* 1. DC01 correlated network-logon and share-access events */
+index=* host="DC01" earliest=-30m
+sourcetype IN ("XmlWinEventLog:Security","WinEventLog:Security")
+(EventCode=4624 OR EventCode=5140 OR EventCode=5145 OR "<EventID>4624</EventID>" OR "<EventID>5140</EventID>" OR "<EventID>5145</EventID>")
+("10.10.10.20" OR "IPC$")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| rex field=_raw "(?i)<Data Name=['\"]TargetUserName['\"]>(?<TargetUser>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]SubjectUserName['\"]>(?<SubjectUser>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]IpAddress['\"]>(?<SourceIP>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]WorkstationName['\"]>(?<SourceHost>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]LogonType['\"]>(?<LogonType>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ShareName['\"]>(?<ShareName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]RelativeTargetName['\"]>(?<RelativeTarget>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]AccessList['\"]>(?<AccessRequested>[^<]+)"
+| eval User=coalesce(TargetUser,SubjectUser), DestinationIP="10.10.10.10"
+| eval Activity=case(EventID=4624 AND LogonType=3,"SMB Network Logon",EventID=5140,"Network Share Accessed",EventID=5145,"Detailed Share Access",true(),"Related SMB Event")
+| eval MITRE="T1021.002"
+| table _time host MITRE Activity EventID User SourceHost SourceIP DestinationIP LogonType ShareName RelativeTarget AccessRequested
+| sort 0 _time
+
+/* 2. Renz Sysmon Event 3 outbound SMB connection */
+index=* host="Renz" earliest=-30m
+(source="*Sysmon*" OR sourcetype="*Sysmon*")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=3
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]User['\"]>(?<User>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]SourceIp['\"]>(?<SourceIP>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]DestinationIp['\"]>(?<DestinationIP>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]DestinationPort['\"]>(?<DestinationPort>[^<]+)"
+| search DestinationIP="10.10.10.10" DestinationPort=445
+| eval MITRE="T1021.002", Activity="Outbound SMB Connection"
+| table _time host MITRE Activity EventID User Process SourceIP DestinationIP DestinationPort
+| sort - _time
+
+/* 3. Dashboard panel */
+index=* host="DC01" earliest=-24h
+sourcetype IN ("XmlWinEventLog:Security","WinEventLog:Security")
+(EventCode=4624 OR EventCode=5140 OR EventCode=5145 OR "<EventID>4624</EventID>" OR "<EventID>5140</EventID>" OR "<EventID>5145</EventID>")
+("10.10.10.20" OR "IPC$")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| rex field=_raw "(?i)<Data Name=['\"]TargetUserName['\"]>(?<TargetUser>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]SubjectUserName['\"]>(?<SubjectUser>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]IpAddress['\"]>(?<SourceIP>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]WorkstationName['\"]>(?<SourceHost>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]LogonType['\"]>(?<LogonType>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ShareName['\"]>(?<ShareName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]RelativeTargetName['\"]>(?<RelativeTarget>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]AccessList['\"]>(?<AccessRequested>[^<]+)"
+| eval User=coalesce(TargetUser,SubjectUser), DestinationIP="10.10.10.10", MITRE="T1021.002"
+| eval Activity=case(EventID=4624 AND LogonType=3,"SMB Network Logon",EventID=5140,"Network Share Accessed",EventID=5145,"Detailed Share Access",true(),"Related SMB Event")
+| table _time host MITRE Activity EventID User SourceHost SourceIP DestinationIP LogonType ShareName RelativeTarget AccessRequested
+| sort - _time
+
+/* 4. Scheduled alert: use a five-minute saved-search time range */
+index=* host="DC01"
+sourcetype IN ("XmlWinEventLog:Security","WinEventLog:Security")
+(EventCode=4624 OR EventCode=5140 OR EventCode=5145 OR "<EventID>4624</EventID>" OR "<EventID>5140</EventID>" OR "<EventID>5145</EventID>")
+("10.10.10.20" OR "IPC$")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| rex field=_raw "(?i)<Data Name=['\"]TargetUserName['\"]>(?<TargetUser>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]SubjectUserName['\"]>(?<SubjectUser>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]IpAddress['\"]>(?<SourceIP>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]WorkstationName['\"]>(?<SourceHost>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]LogonType['\"]>(?<LogonType>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ShareName['\"]>(?<ShareName>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]RelativeTargetName['\"]>(?<RelativeTarget>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]AccessList['\"]>(?<AccessRequested>[^<]+)"
+| eval User=coalesce(TargetUser,SubjectUser), DestinationIP="10.10.10.10", MITRE="T1021.002", Severity="High"
+| eval Activity=case(EventID=4624 AND LogonType=3,"SMB Network Logon",EventID=5140,"Network Share Accessed",EventID=5145,"Detailed Share Access",true(),"Related SMB Event")
+| table _time host MITRE Severity Activity EventID User SourceHost SourceIP DestinationIP LogonType ShareName RelativeTarget AccessRequested
+| sort - _time
+
+/* 5. Email-action troubleshooting */
+index=_internal earliest=-15m
+(source="*scheduler.log" OR source="*python.log" OR sourcetype="splunkd")
+("T1021.002" OR "SMB Windows Admin Share" OR "sendemail" OR "smtp")
+| table _time log_level component message _raw
+| sort - _time
+

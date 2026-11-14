@@ -1,0 +1,44 @@
+MITRE ATT&CK T1021.002 — SMB/Windows Admin Shares
+Source: Renz / 10.10.10.20
+Destination: DC01 / 10.10.10.10
+
+Set the Threat Hunting time range to cover the controlled test.
+
+1. Combined destination-side investigation
+agent.name:"DC01" AND (data.win.system.eventID:"4624" OR data.win.system.eventID:"5140" OR data.win.system.eventID:"5145") AND (data.win.eventdata.ipAddress:"10.10.10.20" OR data.win.eventdata.shareName:*IPC$*)
+
+2. Network Logon Type 3
+agent.name:"DC01" AND data.win.system.eventID:"4624" AND data.win.eventdata.ipAddress:"10.10.10.20" AND data.win.eventdata.logonType:"3"
+
+3. IPC$ network-share access
+agent.name:"DC01" AND data.win.system.eventID:"5140" AND data.win.eventdata.shareName:*IPC$*
+
+4. Detailed share-access checks
+agent.name:"DC01" AND data.win.system.eventID:"5145" AND data.win.eventdata.ipAddress:"10.10.10.20"
+
+5. Source-side Sysmon network connection
+agent.name:"Renz" AND data.win.system.eventID:"3" AND data.win.eventdata.destinationIp:"10.10.10.10" AND data.win.eventdata.destinationPort:"445"
+
+Recommended columns:
+- timestamp
+- agent.name
+- rule.id
+- rule.level
+- rule.description
+- data.win.system.eventID
+- data.win.eventdata.targetUserName
+- data.win.eventdata.subjectUserName
+- data.win.eventdata.workstationName
+- data.win.eventdata.ipAddress
+- data.win.eventdata.logonType
+- data.win.eventdata.shareName
+- data.win.eventdata.relativeTargetName
+- data.win.eventdata.accessList
+- data.win.eventdata.destinationIp
+- data.win.eventdata.destinationPort
+- full_log
+
+If the events do not appear in wazuh-alerts-*, repeat the queries in
+wazuh-archives-* when archives are enabled. Some Windows share or Sysmon network
+events may be collected without being promoted by the default ruleset.
+

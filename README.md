@@ -11,8 +11,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | System | Address | Role |
 |---|---:|---|
 | FortiGate VM | `10.10.10.1` | LAN gateway, DHCP, firewall, NAT and syslog source |
-| DC01 | `10.10.10.10` | Windows Server, AD DS, DNS, Sysmon, Wazuh agent and Splunk Universal Forwarder |
-| Renz | `10.10.10.20` | Windows 11 domain endpoint, Sysmon process/registry telemetry, PowerShell, Task Scheduler, scoped file-system auditing, Active Directory discovery validation and SIEM agents |
+| DC01 | `10.10.10.10` | Windows Server, AD DS, DNS, Sysmon, SMB/File Share auditing, Wazuh agent and Splunk Universal Forwarder |
+| Renz | `10.10.10.20` | Windows 11 domain endpoint, Sysmon process/network telemetry, PowerShell, Task Scheduler, Active Directory discovery, SMB validation and SIEM agents |
 | Wazuh | `10.10.10.30` | Manager, indexer, dashboard, correlation and endpoint alerting |
 | Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra and validation tooling |
 | Linux01 | `10.10.10.50` | Ubuntu telemetry host, auditd, FortiGate syslog receiver, Wazuh agent, Splunk Universal Forwarder and controlled agent-health validation |
@@ -57,6 +57,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Windows Registry Run-key persistence monitoring
 - Windows file creation and deletion monitoring through Sysmon Event `11` and Security Events `4663`/`4660`
 - Active Directory account-discovery monitoring through Sysmon process creation and PowerShell script-block logging
+- SMB network-logon and administrative-share monitoring through Events `4624`, `5140`, `5145` and Sysmon Event `3`
 - Linux sudo, SSH, execution and file-deletion activity
 - Linux security-agent interruption and recovery monitoring
 - FortiGate denied and local-in traffic analysis
@@ -75,6 +76,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Validated Linux defense impairment by stopping the Wazuh Agent while auditd and Splunk remained active, then verifying automated recovery
 - Validated controlled Windows file deletion using a SHA-256 baseline, scoped Object Access auditing, Security Events `4663`/`4660`, Wazuh review and Splunk correlation
 - Validated domain-account discovery using `net user /domain`, `Get-ADUser`/ADSI, Sysmon Event `1`, PowerShell Event `4104`, Wazuh and Splunk
+- Validated controlled SMB/IPC$ access from Renz to DC01 using network-logon, share-access and Sysmon network-connection telemetry
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -91,6 +93,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [Linux Impair Defenses](tests/T1562-001-impair-defenses/NIST-MITRE-Linux-Impair-Defenses.md) | `T1562.001` | Controlled Wazuh Agent interruption, systemd and auditd evidence, independent Splunk detection, alert, email and recovery |
 | [Windows File Deletion](tests/T1070-004-windows-file-deletion/NIST-MITRE-Windows-File-Deletion.md) | `T1070.004` | Controlled marker-file deletion, SHA-256 baseline, Events 4663/4660, Wazuh investigation, Splunk dashboard, alert, email and cleanup |
 | [Domain Account Discovery](tests/T1087-002-domain-account-discovery/NIST-MITRE-Domain-Account-Discovery.md) | `T1087.002` | Native and PowerShell/ADSI account discovery, Sysmon Event 1, PowerShell Event 4104, Wazuh, Splunk dashboard, alert, email and recovery |
+| [SMB/Windows Admin Shares](tests/T1021-002-smb-windows-admin-shares/NIST-MITRE-SMB-Windows-Admin-Shares.md) | `T1021.002` | Controlled IPC$ connection, Events 4624/5140/5145, Sysmon Event 3, source/destination correlation, Wazuh, Splunk dashboard, alert, email and cleanup |
 
 ## Completed response workflows
 
@@ -174,6 +177,16 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 5. Correlated both discovery methods in Wazuh and Splunk and mapped the evidence to `T1087.002`.
 6. Added a combined Splunk dashboard panel, high-severity scheduled alert and SMTP notification.
 7. Verified the domain secure channel, Wazuh/Splunk connectivity and endpoint monitoring-service health.
+
+### SMB/Windows Admin Shares
+
+1. Verified Renz and DC01 identity, domain membership, TCP `445` connectivity, monitoring services and Splunk ingestion.
+2. Enabled File Share, Detailed File Share and successful Logon auditing on DC01.
+3. Created a controlled, read-only `\\DC01\IPC$` connection from Renz using the currently authenticated domain account.
+4. Validated DC01 Security Event `4624` Logon Type `3`, Event `5140` share access and Event `5145` detailed share access.
+5. Reviewed Renz Sysmon Event `3` for the outbound connection to `10.10.10.10:445` and correlated source/destination evidence in Wazuh and Splunk.
+6. Added a Splunk dashboard panel, high-severity scheduled alert and SMTP notification.
+7. Removed the IPC$ test session and verified domain trust, monitoring services and SIEM connectivity.
 
 ## Documentation
 
@@ -259,8 +272,15 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
         ├── wazuh-queries.txt
         └── screenshots/
             └── README.md
-    └── T1087-002-domain-account-discovery/
+    ├── T1087-002-domain-account-discovery/
         ├── NIST-MITRE-Domain-Account-Discovery.md
+        ├── splunk-searches.spl
+        ├── wazuh-queries.txt
+        └── screenshots/
+            ├── README.md
+            └── 18 evidence screenshots
+    └── T1021-002-smb-windows-admin-shares/
+        ├── NIST-MITRE-SMB-Windows-Admin-Shares.md
         ├── splunk-searches.spl
         ├── wazuh-queries.txt
         └── screenshots/
@@ -287,6 +307,7 @@ Only sanitized evidence is published. Passwords, application passwords, API toke
 - Linux security-agent impairment, independent detection and recovery validation
 - Windows Object Access auditing and controlled file-deletion detection
 - Active Directory domain-account discovery detection with native and PowerShell telemetry
+- SMB network-logon and Windows administrative-share detection across source and destination endpoints
 - NIST CSF 2.0 and MITRE ATT&CK mapping
 - Vulnerability assessment and packet analysis
 - Incident containment, recovery and technical documentation
