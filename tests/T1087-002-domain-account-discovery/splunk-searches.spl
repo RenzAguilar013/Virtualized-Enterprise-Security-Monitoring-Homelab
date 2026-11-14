@@ -1,0 +1,74 @@
+/* MITRE ATT&CK T1087.002 — Domain Account Discovery */
+
+/* 1. Sysmon Event 1: net user /domain */
+index=* host="Renz" earliest=-30m
+(source="*Sysmon*" OR sourcetype="*Sysmon*")
+("net.exe" OR "net1.exe") "user /domain"
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=1
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ParentImage['\"]>(?<ParentProcess>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]User['\"]>(?<User>[^<]+)"
+| eval MITRE="T1087.002", Activity="Domain Account Discovery"
+| table _time host MITRE Activity EventID User Process ParentProcess CommandLine
+| sort - _time
+
+/* 2. PowerShell Event 4104: Get-ADUser or ADSI */
+index=* host="Renz" earliest=-30m
+(source="*Microsoft-Windows-PowerShell/Operational*" OR sourcetype="XmlWinEventLog:Microsoft-Windows-PowerShell/Operational")
+("Get-ADUser" OR "adsisearcher" OR "samaccountname" OR "objectCategory=person")
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| search EventID=4104
+| rex field=_raw "(?i)<Data Name=['\"]ScriptBlockText['\"]>(?<ScriptBlock>[\s\S]*?)</Data>"
+| eval MITRE="T1087.002", Activity="PowerShell Domain Account Discovery"
+| table _time host MITRE Activity EventID user ScriptBlock
+| sort - _time
+
+/* 3. Combined investigation and dashboard panel */
+index=* host="Renz" earliest=-24h
+(
+  ((source="*Sysmon*" OR sourcetype="*Sysmon*") ("net.exe" OR "net1.exe") "user /domain")
+  OR
+  ((source="*Microsoft-Windows-PowerShell/Operational*" OR sourcetype="XmlWinEventLog:Microsoft-Windows-PowerShell/Operational") ("Get-ADUser" OR "adsisearcher" OR "samaccountname"))
+)
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ParentImage['\"]>(?<ParentProcess>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]User['\"]>(?<SysmonUser>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ScriptBlockText['\"]>(?<ScriptBlock>[\s\S]*?)</Data>"
+| eval Method=case(EventID=1,"Native net.exe discovery",EventID=4104,"PowerShell/ADSI discovery",true(),"Other")
+| eval User=coalesce(SysmonUser,user), Evidence=coalesce(CommandLine,ScriptBlock), MITRE="T1087.002"
+| table _time host MITRE Method EventID User Process ParentProcess Evidence
+| sort - _time
+
+/* 4. Scheduled alert */
+index=* host="Renz"
+(
+  ((source="*Sysmon*" OR sourcetype="*Sysmon*") ("net.exe" OR "net1.exe") "user /domain")
+  OR
+  ((source="*Microsoft-Windows-PowerShell/Operational*" OR sourcetype="XmlWinEventLog:Microsoft-Windows-PowerShell/Operational") ("Get-ADUser" OR "adsisearcher" OR "samaccountname"))
+)
+| rex field=_raw "(?i)<EventID[^>]*>(?<ExtractedEventID>\d+)</EventID>"
+| eval EventID=coalesce(EventCode,ExtractedEventID)
+| rex field=_raw "(?i)<Data Name=['\"]Image['\"]>(?<Process>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]CommandLine['\"]>(?<CommandLine>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ParentImage['\"]>(?<ParentProcess>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]User['\"]>(?<SysmonUser>[^<]+)"
+| rex field=_raw "(?i)<Data Name=['\"]ScriptBlockText['\"]>(?<ScriptBlock>[\s\S]*?)</Data>"
+| eval Method=case(EventID=1,"Native net.exe discovery",EventID=4104,"PowerShell/ADSI discovery",true(),"Other")
+| eval User=coalesce(SysmonUser,user), Evidence=coalesce(CommandLine,ScriptBlock), MITRE="T1087.002", Severity="High"
+| table _time host MITRE Severity Method EventID User Process ParentProcess Evidence
+| sort - _time
+
+/* 5. Email-action troubleshooting */
+index=_internal earliest=-15m
+(source="*scheduler.log" OR source="*python.log" OR sourcetype="splunkd")
+("T1087.002" OR "Domain Account Discovery" OR "sendemail" OR "smtp")
+| table _time log_level component message _raw
+| sort - _time
+

@@ -12,7 +12,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 |---|---:|---|
 | FortiGate VM | `10.10.10.1` | LAN gateway, DHCP, firewall, NAT and syslog source |
 | DC01 | `10.10.10.10` | Windows Server, AD DS, DNS, Sysmon, Wazuh agent and Splunk Universal Forwarder |
-| Renz | `10.10.10.20` | Windows 11 endpoint, Sysmon registry/process telemetry, PowerShell, Task Scheduler and scoped file-system auditing, Atomic Red Team, Sigma and SIEM agents |
+| Renz | `10.10.10.20` | Windows 11 domain endpoint, Sysmon process/registry telemetry, PowerShell, Task Scheduler, scoped file-system auditing, Active Directory discovery validation and SIEM agents |
 | Wazuh | `10.10.10.30` | Manager, indexer, dashboard, correlation and endpoint alerting |
 | Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra and validation tooling |
 | Linux01 | `10.10.10.50` | Ubuntu telemetry host, auditd, FortiGate syslog receiver, Wazuh agent, Splunk Universal Forwarder and controlled agent-health validation |
@@ -56,6 +56,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Windows scheduled-task creation and deletion monitoring
 - Windows Registry Run-key persistence monitoring
 - Windows file creation and deletion monitoring through Sysmon Event `11` and Security Events `4663`/`4660`
+- Active Directory account-discovery monitoring through Sysmon process creation and PowerShell script-block logging
 - Linux sudo, SSH, execution and file-deletion activity
 - Linux security-agent interruption and recovery monitoring
 - FortiGate denied and local-in traffic analysis
@@ -73,6 +74,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Validated Registry Run-key persistence through Sysmon Events `12` and `13`, Wazuh threat hunting and Splunk correlation
 - Validated Linux defense impairment by stopping the Wazuh Agent while auditd and Splunk remained active, then verifying automated recovery
 - Validated controlled Windows file deletion using a SHA-256 baseline, scoped Object Access auditing, Security Events `4663`/`4660`, Wazuh review and Splunk correlation
+- Validated domain-account discovery using `net user /domain`, `Get-ADUser`/ADSI, Sysmon Event `1`, PowerShell Event `4104`, Wazuh and Splunk
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -88,6 +90,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [Registry Run Keys](tests/T1547-001-registry-run-keys/NIST-MITRE-Registry-Run-Keys.md) | `T1547.001` | Controlled HKCU Run-value creation, Sysmon Events 12/13, Wazuh, Splunk dashboard, high-severity alert, email and recovery |
 | [Linux Impair Defenses](tests/T1562-001-impair-defenses/NIST-MITRE-Linux-Impair-Defenses.md) | `T1562.001` | Controlled Wazuh Agent interruption, systemd and auditd evidence, independent Splunk detection, alert, email and recovery |
 | [Windows File Deletion](tests/T1070-004-windows-file-deletion/NIST-MITRE-Windows-File-Deletion.md) | `T1070.004` | Controlled marker-file deletion, SHA-256 baseline, Events 4663/4660, Wazuh investigation, Splunk dashboard, alert, email and cleanup |
+| [Domain Account Discovery](tests/T1087-002-domain-account-discovery/NIST-MITRE-Domain-Account-Discovery.md) | `T1087.002` | Native and PowerShell/ADSI account discovery, Sysmon Event 1, PowerShell Event 4104, Wazuh, Splunk dashboard, alert, email and recovery |
 
 ## Completed response workflows
 
@@ -161,6 +164,16 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 5. Deleted only the marker file and validated Security Event `4663` with DELETE access and related Event `4660` activity.
 6. Investigated the event in Wazuh and Splunk, then added a dashboard panel, high-severity scheduled alert and SMTP notification.
 7. Removed the temporary SACL and test folder and verified Sysmon, Wazuh and the Splunk Forwarder remained healthy.
+
+### Domain account discovery
+
+1. Verified Windows domain membership, DNS resolution, LDAP/SMB connectivity to DC01 and endpoint monitoring services.
+2. Established Security, Sysmon and PowerShell event-channel and Splunk telemetry baselines.
+3. Executed the read-only `net user /domain` command and validated Sysmon Event `1` with the process, parent process, user and command line.
+4. Performed a second read-only discovery test with `Get-ADUser` or ADSI and validated PowerShell Event `4104`.
+5. Correlated both discovery methods in Wazuh and Splunk and mapped the evidence to `T1087.002`.
+6. Added a combined Splunk dashboard panel, high-severity scheduled alert and SMTP notification.
+7. Verified the domain secure channel, Wazuh/Splunk connectivity and endpoint monitoring-service health.
 
 ## Documentation
 
@@ -240,12 +253,19 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
         └── screenshots/
             ├── README.md
             └── 14 evidence screenshots
-    └── T1070-004-windows-file-deletion/
+    ├── T1070-004-windows-file-deletion/
         ├── NIST-MITRE-Windows-File-Deletion.md
         ├── splunk-searches.spl
         ├── wazuh-queries.txt
         └── screenshots/
             └── README.md
+    └── T1087-002-domain-account-discovery/
+        ├── NIST-MITRE-Domain-Account-Discovery.md
+        ├── splunk-searches.spl
+        ├── wazuh-queries.txt
+        └── screenshots/
+            ├── README.md
+            └── 18 evidence screenshots
 ```
 
 ## Evidence standards
@@ -266,6 +286,7 @@ Only sanitized evidence is published. Passwords, application passwords, API toke
 - Windows Registry Run-key persistence detection
 - Linux security-agent impairment, independent detection and recovery validation
 - Windows Object Access auditing and controlled file-deletion detection
+- Active Directory domain-account discovery detection with native and PowerShell telemetry
 - NIST CSF 2.0 and MITRE ATT&CK mapping
 - Vulnerability assessment and packet analysis
 - Incident containment, recovery and technical documentation

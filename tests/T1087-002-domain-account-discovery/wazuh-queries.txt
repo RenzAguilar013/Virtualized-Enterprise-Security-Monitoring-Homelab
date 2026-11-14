@@ -1,0 +1,39 @@
+MITRE ATT&CK T1087.002 — Domain Account Discovery
+Source endpoint: Renz / 10.10.10.20
+Domain controller: DC01 / 10.10.10.10
+
+Set the Threat Hunting time range to cover the test.
+
+1. Exact native discovery command
+agent.name:"Renz" AND data.win.system.eventID:"1" AND "net user /domain"
+
+2. net.exe or net1.exe process activity
+agent.name:"Renz" AND data.win.system.eventID:"1" AND (data.win.eventdata.image:*net.exe OR data.win.eventdata.image:*net1.exe)
+
+3. Command-line search
+agent.name:"Renz" AND data.win.system.eventID:"1" AND data.win.eventdata.commandLine:*user* AND data.win.eventdata.commandLine:*/domain*
+
+4. PowerShell script-block discovery
+agent.name:"Renz" AND data.win.system.eventID:"4104" AND ("Get-ADUser" OR "adsisearcher" OR "samaccountname")
+
+5. Broad T1087.002 investigation
+agent.name:"Renz" AND ("net user /domain" OR "Get-ADUser" OR "adsisearcher" OR "samaccountname")
+
+Recommended columns:
+- timestamp
+- agent.name
+- rule.id
+- rule.level
+- rule.description
+- data.win.system.eventID
+- data.win.eventdata.user
+- data.win.eventdata.image
+- data.win.eventdata.parentImage
+- data.win.eventdata.commandLine
+- data.win.eventdata.scriptBlockText
+- full_log
+
+If the events do not appear in wazuh-alerts-*, repeat the searches in
+wazuh-archives-* when archives are enabled. Some collected process or PowerShell
+events may not be promoted by the default Wazuh ruleset.
+
