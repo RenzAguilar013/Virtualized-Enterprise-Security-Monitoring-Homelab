@@ -1,4 +1,4 @@
-# OWASP Juice Shop Exposed-File Detection Validation
+# OWASP 2025 A01/A02 Exposed-Resource Detection Validation
 
 ## Objective
 
@@ -20,8 +20,8 @@ This exercise was performed only against the owner-controlled OWASP Juice Shop i
 
 ## Security mapping
 
-- **OWASP Top 10 A01:2021 — Broken Access Control:** a user could retrieve content below `/ftp/` without authentication.
-- **OWASP Top 10 A05:2021 — Security Misconfiguration:** directory and file exposure increased information-disclosure risk.
+- **OWASP Top 10 A01:2025 — Broken Access Control:** a user could retrieve content below `/ftp/` without authentication.
+- **OWASP Top 10 A02:2025 — Security Misconfiguration:** directory and file exposure increased information-disclosure risk.
 - **NIST CSF 2.0:** Identify, Protect, Detect, and Respond functions were exercised through asset definition, service containment, monitoring, alerting, and remediation planning.
 
 ## Architecture and telemetry flow
@@ -119,10 +119,10 @@ The activity demonstrated an end-to-end web security workflow: target deployment
 
 ## Related files
 
-- [`nginx-juice-shop.conf`](nginx-juice-shop.conf)
-- [`splunk-forwarder-inputs.conf`](splunk-forwarder-inputs.conf)
+- [`nginx-juice-shop.conf`](../shared-config/nginx-juice-shop.conf)
+- [`splunk-forwarder-inputs.conf`](../shared-config/splunk-forwarder-inputs.conf)
 - [`splunk-searches.spl`](splunk-searches.spl)
-- [`wazuh-agent-localfile.xml`](wazuh-agent-localfile.xml)
+- [`wazuh-agent-localfile.xml`](../shared-config/wazuh-agent-localfile.xml)
 - [`wazuh-rules.xml`](wazuh-rules.xml)
 - [`wazuh-queries.txt`](wazuh-queries.txt)
 - [`screenshots/README.md`](screenshots/README.md)

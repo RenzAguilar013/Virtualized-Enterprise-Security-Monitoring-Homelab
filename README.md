@@ -84,7 +84,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Validated domain-account discovery using `net user /domain`, `Get-ADUser`/ADSI, Sysmon Event `1`, PowerShell Event `4104`, Wazuh and Splunk
 - Validated controlled SMB/IPC$ access from Renz to DC01 using network-logon, share-access and Sysmon network-connection telemetry
 - Deployed OWASP Juice Shop behind Nginx on WEB01 with Docker loopback binding and dual Wazuh/Splunk telemetry
-- Validated OWASP A01/A05 exposed-file access through Burp Suite and correlated HTTP `200` responses in Nginx, Wazuh and Splunk
+- Validated OWASP 2025 A01/A02 exposed-resource access through Burp Suite and correlated HTTP `200` responses in Nginx, Wazuh and Splunk
 - Authored Wazuh web rules and a Splunk scheduled alert for `/ftp` directory or document access
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
@@ -108,7 +108,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 
 | Exercise | OWASP mapping | Evidence |
 |---|---|---|
-| [Juice Shop exposed-file detection](tests/OWASP-A01-A05-juice-shop-exposed-files/OWASP-Burp-Juice-Shop-Exposed-Files.md) | **A01:2021 Broken Access Control**, **A05:2021 Security Misconfiguration** | WEB01, Docker, Nginx, Burp Suite, exposed `/ftp/` resources, Wazuh custom rules, Splunk investigation, triggered alert and email notification |
+| [Juice Shop exposed-resource detection](tests/owasp-top-10-2025/A01-A02-exposed-resources/OWASP-A01-A02-Exposed-Resources-Validation.md) | **A01:2025 Broken Access Control**, **A02:2025 Security Misconfiguration** | WEB01, Docker, Nginx, Burp Suite, exposed `/ftp/` resources, Wazuh custom rules, Splunk investigation, triggered alert and email notification |
 
 ## Completed response workflows
 
@@ -211,7 +211,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 4. Confirmed unauthenticated HTTP `200` access to the `/ftp/` directory and `/ftp/acquisitions.md`.
 5. Correlated the source IP, URI, status code and user agent in Nginx, Wazuh and the Splunk `web` index.
 6. Added Wazuh rule `119971` and a high-severity Splunk alert, then verified triggered-alert and SMTP email workflows.
-7. Documented OWASP A01/A05 mappings, containment controls, remediation guidance and evidence-handling requirements.
+7. Documented OWASP 2025 A01/A02 mappings, containment controls, remediation guidance and evidence-handling requirements.
 
 ## Documentation
 
@@ -260,16 +260,20 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
     ├── T1547-001-registry-run-keys/
     ├── T1562-001-impair-defenses/
     ├── T1021-002-smb-windows-admin-shares/
-    └── OWASP-A01-A05-juice-shop-exposed-files/
-        ├── OWASP-Burp-Juice-Shop-Exposed-Files.md
-        ├── nginx-juice-shop.conf
-        ├── splunk-forwarder-inputs.conf
-        ├── splunk-searches.spl
-        ├── wazuh-agent-localfile.xml
-        ├── wazuh-queries.txt
-        ├── wazuh-rules.xml
-        └── screenshots/
-            └── README.md
+    └── owasp-top-10-2025/
+        ├── README.md
+        ├── shared-config/
+        │   ├── nginx-juice-shop.conf
+        │   ├── splunk-forwarder-inputs.conf
+        │   └── wazuh-agent-localfile.xml
+        └── A01-A02-exposed-resources/
+            ├── OWASP-A01-A02-Exposed-Resources-Validation.md
+            ├── splunk-searches.spl
+            ├── wazuh-queries.txt
+            ├── wazuh-rules.xml
+            └── screenshots/
+                ├── README.md
+                └── 41 evidence screenshots
 ```
 
 ## Evidence standards

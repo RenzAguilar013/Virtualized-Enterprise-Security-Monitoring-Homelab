@@ -163,7 +163,7 @@
 
   <rect x="795" y="1040" width="780" height="145" class="section" stroke="#087f8c"/>
   <text x="815" y="1068" class="h teal">OWASP Juice Shop + Burp Suite Validation</text>
-  <text x="815" y="1093" class="t">A01:2021 Broken Access Control • A05:2021 Security Misconfiguration</text>
+  <text x="815" y="1093" class="t">A01:2025 Broken Access Control • A02:2025 Security Misconfiguration</text>
   <text x="815" y="1116" class="t">Exposed /ftp directory and unauthenticated document access</text>
   <text x="815" y="1142" class="s">Burp evidence • Nginx telemetry • Wazuh 119971 • Splunk alert • SMTP email</text>
   <rect x="815" y="1155" width="270" height="20" class="badge" fill="#e8f7f8"/><text x="950" y="1169" text-anchor="middle" class="s bold teal">END-TO-END WEB DETECTION</text>
