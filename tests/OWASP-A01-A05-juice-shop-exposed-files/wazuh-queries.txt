@@ -1,0 +1,11 @@
+# WEB01 agent and Nginx activity
+agent.name:"WEB01-10.10.10.70" AND (data.url:"/ftp*" OR full_log:"/ftp")
+
+# Ingestion validation marker
+rule.id:"119970"
+
+# Exposed directory or document detection
+rule.id:"119971"
+
+# Detection plus agent scope
+agent.name:"WEB01-10.10.10.70" AND rule.id:"119971"

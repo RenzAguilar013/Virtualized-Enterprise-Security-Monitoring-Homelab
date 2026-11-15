@@ -1,0 +1,27 @@
+/* 1. WEB01 Nginx baseline */
+index=web host="web01" sourcetype="nginx:access" earliest=-30m
+| table _time host source sourcetype _raw
+| sort - _time
+
+/* 2. Burp-generated requests */
+index=web host="web01" sourcetype="nginx:access" earliest=-30m
+("Burp" OR "/robots.txt" OR "/ftp")
+| rex field=_raw "^(?<src_ip>\S+)\s+\S+\s+\S+\s+\[[^\]]+\]\s+\"(?<http_method>\S+)\s+(?<uri>\S+)\s+HTTP/[0-9.]+\"\s+(?<status>\d{3})"
+| table _time src_ip http_method uri status _raw
+| sort - _time
+
+/* 3. Exposed directory or document access investigation */
+index=web host="web01" sourcetype="nginx:access" earliest=-24h
+| rex field=_raw "^(?<src_ip>\S+)\s+\S+\s+\S+\s+\[[^\]]+\]\s+\"(?<http_method>\S+)\s+(?<uri>\S+)\s+HTTP/[0-9.]+\"\s+(?<status>\d{3})\s+(?<bytes>\d+)"
+| search uri="/ftp*"
+| eval finding=case(status=200,"Exposed resource accessed",status=403,"Access blocked",status=404,"Resource not found",true(),"Review")
+| table _time host src_ip http_method uri status bytes finding
+| sort - _time
+
+/* 4. Scheduled alert: OWASP exposed FTP directory or document access */
+index=web host="web01" sourcetype="nginx:access" earliest=-5m
+| rex field=_raw "^(?<src_ip>\S+)\s+\S+\s+\S+\s+\[[^\]]+\]\s+\"(?<http_method>\S+)\s+(?<uri>\S+)\s+HTTP/[0-9.]+\"\s+(?<status>\d{3})"
+| search uri="/ftp*" status=200
+| eval alert_name="OWASP - Exposed FTP Directory or Document Access"
+| table _time host src_ip http_method uri status alert_name
+| sort - _time

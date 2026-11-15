@@ -1,0 +1,10 @@
+<!-- Add these blocks inside <ossec_config> on WEB01. -->
+<localfile>
+  <log_format>apache</log_format>
+  <location>/var/log/nginx/juice-shop-access.log</location>
+</localfile>
+
+<localfile>
+  <log_format>syslog</log_format>
+  <location>/var/log/nginx/juice-shop-error.log</location>
+</localfile>

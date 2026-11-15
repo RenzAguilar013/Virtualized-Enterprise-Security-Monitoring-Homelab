@@ -1,0 +1,19 @@
+<!-- Add inside the <group> element in /var/ossec/etc/rules/local_rules.xml. -->
+<group name="local,web,nginx,owasp,">
+  <rule id="119970" level="5">
+    <if_sid>31100,31108</if_sid>
+    <match>WAZUH_WEB_INGEST_TEST</match>
+    <description>WEB01 Nginx access-log ingestion validation marker.</description>
+    <group>web,nginx,validation,</group>
+  </rule>
+
+  <rule id="119971" level="10">
+    <if_sid>31100,31108</if_sid>
+    <url type="pcre2">(?i)^/ftp(?:/|$)</url>
+    <description>OWASP Juice Shop exposed FTP directory or document accessed.</description>
+    <mitre>
+      <id>T1083</id>
+    </mitre>
+    <group>web,nginx,owasp,access_control,</group>
+  </rule>
+</group>

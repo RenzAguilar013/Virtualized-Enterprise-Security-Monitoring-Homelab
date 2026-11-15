@@ -1,6 +1,6 @@
 # Virtualized Enterprise Security and Monitoring Homelab
 
-A multi-host enterprise security homelab built with VMware Workstation, FortiGate, Active Directory, Wazuh, Splunk Enterprise, Kali Linux, Nessus, Sysmon, auditd, Atomic Red Team and Sigma.
+A multi-host enterprise security homelab built with VMware Workstation, FortiGate, Active Directory, Wazuh, Splunk Enterprise, Kali Linux, Nessus, Sysmon, auditd, Atomic Red Team, Sigma, Docker, Nginx, OWASP Juice Shop and Burp Suite Community Edition.
 
 The environment simulates SOC monitoring, centralized telemetry, firewall administration, identity security, vulnerability assessment, detection engineering, alerting, incident investigation, containment, recovery and repeatable NIST CSF 2.0 and MITRE ATT&CK validation.
 
@@ -17,6 +17,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra and validation tooling |
 | Linux01 | `10.10.10.50` | Ubuntu telemetry host, auditd, FortiGate syslog receiver, Wazuh agent, Splunk Universal Forwarder and controlled agent-health validation |
 | Splunk Enterprise | `10.10.10.60` | Central search, dashboards, scheduled alerts and SMTP email actions |
+| WEB01 | `10.10.10.70` | Ubuntu web-security target with Nginx, Docker, OWASP Juice Shop, Wazuh Agent and Splunk Universal Forwarder |
 
 ### Network design
 
@@ -27,6 +28,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - FortiGate LAN gateway: `10.10.10.1`
 - Internal DNS: `10.10.10.10`
 - DHCP and endpoint reservations managed by FortiGate
+- Juice Shop is contained on WEB01 loopback port `3000`; Nginx is the only LAN-facing entry point on port `80`
+- No WAN port-forward exposes the intentionally vulnerable web target
 
 ## Implemented capabilities
 
@@ -45,6 +48,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - FortiGate syslog collection through Linux01
 - Splunk Universal Forwarders and Wazuh agents on Windows and Linux endpoints
 - Splunk dashboards, Wazuh threat hunting, scheduled alerts and SMTP notifications
+- Dedicated WEB01 Nginx access/error telemetry forwarded to Wazuh and the Splunk `web` index
 
 ### Detection and investigation
 
@@ -62,7 +66,9 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Linux security-agent interruption and recovery monitoring
 - FortiGate denied and local-in traffic analysis
 - Nessus vulnerability scanning and remediation evidence
-- Source IP, destination IP, user, host, port and timeline correlation
+- OWASP Juice Shop request inspection through Burp Suite Proxy, HTTP history and Repeater
+- Exposed-directory and document-access monitoring for `/ftp/` resources
+- Source IP, destination IP, user, host, port, URI, HTTP status and timeline correlation
 
 ## Detection engineering and validation
 
@@ -77,6 +83,9 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Validated controlled Windows file deletion using a SHA-256 baseline, scoped Object Access auditing, Security Events `4663`/`4660`, Wazuh review and Splunk correlation
 - Validated domain-account discovery using `net user /domain`, `Get-ADUser`/ADSI, Sysmon Event `1`, PowerShell Event `4104`, Wazuh and Splunk
 - Validated controlled SMB/IPC$ access from Renz to DC01 using network-logon, share-access and Sysmon network-connection telemetry
+- Deployed OWASP Juice Shop behind Nginx on WEB01 with Docker loopback binding and dual Wazuh/Splunk telemetry
+- Validated OWASP A01/A05 exposed-file access through Burp Suite and correlated HTTP `200` responses in Nginx, Wazuh and Splunk
+- Authored Wazuh web rules and a Splunk scheduled alert for `/ftp` directory or document access
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -94,6 +103,12 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [Windows File Deletion](tests/T1070-004-windows-file-deletion/NIST-MITRE-Windows-File-Deletion.md) | `T1070.004` | Controlled marker-file deletion, SHA-256 baseline, Events 4663/4660, Wazuh investigation, Splunk dashboard, alert, email and cleanup |
 | [Domain Account Discovery](tests/T1087-002-domain-account-discovery/NIST-MITRE-Domain-Account-Discovery.md) | `T1087.002` | Native and PowerShell/ADSI account discovery, Sysmon Event 1, PowerShell Event 4104, Wazuh, Splunk dashboard, alert, email and recovery |
 | [SMB/Windows Admin Shares](tests/T1021-002-smb-windows-admin-shares/NIST-MITRE-SMB-Windows-Admin-Shares.md) | `T1021.002` | Controlled IPC$ connection, Events 4624/5140/5145, Sysmon Event 3, source/destination correlation, Wazuh, Splunk dashboard, alert, email and cleanup |
+
+## OWASP web application security exercise
+
+| Exercise | OWASP mapping | Evidence |
+|---|---|---|
+| [Juice Shop exposed-file detection](tests/OWASP-A01-A05-juice-shop-exposed-files/OWASP-Burp-Juice-Shop-Exposed-Files.md) | **A01:2021 Broken Access Control**, **A05:2021 Security Misconfiguration** | WEB01, Docker, Nginx, Burp Suite, exposed `/ftp/` resources, Wazuh custom rules, Splunk investigation, triggered alert and email notification |
 
 ## Completed response workflows
 
@@ -188,6 +203,16 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 6. Added a Splunk dashboard panel, high-severity scheduled alert and SMTP notification.
 7. Removed the IPC$ test session and verified domain trust, monitoring services and SIEM connectivity.
 
+### OWASP Juice Shop exposed-file access
+
+1. Built WEB01 as a contained Ubuntu web target and installed Docker, Nginx, the Wazuh Agent and Splunk Universal Forwarder.
+2. Ran OWASP Juice Shop on `127.0.0.1:3000` and exposed it to the lab only through Nginx on `10.10.10.70:80`.
+3. Configured Burp Suite Community Edition on Kali and inspected authorized HTTP traffic with Proxy history and Repeater.
+4. Confirmed unauthenticated HTTP `200` access to the `/ftp/` directory and `/ftp/acquisitions.md`.
+5. Correlated the source IP, URI, status code and user agent in Nginx, Wazuh and the Splunk `web` index.
+6. Added Wazuh rule `119971` and a high-severity Splunk alert, then verified triggered-alert and SMTP email workflows.
+7. Documented OWASP A01/A05 mappings, containment controls, remediation guidance and evidence-handling requirements.
+
 ## Documentation
 
 - [Architecture](docs/architecture.md)
@@ -200,6 +225,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - [Splunk configuration](docs/splunk-configuration.md)
 - [Sysmon telemetry](docs/sysmon-telemetry.md)
 - [auditd configuration](docs/auditd-configuration.md)
+- [Web application security lab](docs/web-application-security-lab.md)
 
 ## Repository structure
 
@@ -211,81 +237,39 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 │   └── topology.svg
 ├── docs/
 │   ├── architecture.md
-│   ├── vmware-network.md
+│   ├── active-directory.md
+│   ├── auditd-configuration.md
 │   ├── fortigate-configuration.md
 │   ├── firewall-policies.md
-│   ├── active-directory.md
-│   ├── windows-client.md
-│   ├── wazuh-configuration.md
 │   ├── splunk-configuration.md
 │   ├── sysmon-telemetry.md
-│   └── auditd-configuration.md
+│   ├── vmware-network.md
+│   ├── wazuh-configuration.md
+│   ├── web-application-security-lab.md
+│   └── windows-client.md
 ├── screenshots/
-│   ├── Fortigate/
-│   ├── Nessus/
-│   ├── Splunk/
-│   ├── active-directory/
-│   ├── testing/
-│   ├── vmware/
-│   ├── wazuh/
-│   └── windows-client/
+│   └── platform and infrastructure evidence
 └── tests/
-    ├── T1110-ssh-password-guessing/
     ├── T1046-network-service-discovery/
-    │   ├── splunk-searches.spl
-    │   └── wazuh-queries.txt
-    ├── T1059-001-powershell-execution-validation/
-    │   ├── NIST-MITRE-PowerShell-Execution-Validation.md
-    │   ├── splunk-searches.spl
-    │   └── screenshots/
-    ├── T1543-003-windows-service-creation/
-    │   ├── NIST-MITRE-Windows-Service-Creation.md
-    │   ├── splunk-searches.spl
-    │   ├── wazuh-queries.txt
-    │   └── screenshots/
-    │       ├── README.md
-    │       └── 20 evidence screenshots
     ├── T1053-005-windows-scheduled-task/
-    │   ├── NIST-MITRE-Windows-Scheduled-Task.md
-    │   ├── splunk-searches.spl
-    │   ├── wazuh-queries.txt
-    │   └── screenshots/
-    │       ├── README.md
-    │       └── 20 evidence screenshots
-    ├── T1547-001-registry-run-keys/
-    │   ├── NIST-MITRE-Registry-Run-Keys.md
-    │   ├── splunk-searches.spl
-    │   ├── wazuh-queries.txt
-    │   └── screenshots/
-    │       ├── README.md
-    │       └── 15 evidence screenshots
-    ├── T1562-001-impair-defenses/
-        ├── NIST-MITRE-Linux-Impair-Defenses.md
-        ├── splunk-searches.spl
-        ├── wazuh-queries.txt
-        └── screenshots/
-            ├── README.md
-            └── 14 evidence screenshots
+    ├── T1059-001-powershell-execution-validation/
     ├── T1070-004-windows-file-deletion/
-        ├── NIST-MITRE-Windows-File-Deletion.md
+    ├── T1087-002-domain-account-discovery/
+    ├── T1110-ssh-password-guessing/
+    ├── T1543-003-windows-service-creation/
+    ├── T1547-001-registry-run-keys/
+    ├── T1562-001-impair-defenses/
+    ├── T1021-002-smb-windows-admin-shares/
+    └── OWASP-A01-A05-juice-shop-exposed-files/
+        ├── OWASP-Burp-Juice-Shop-Exposed-Files.md
+        ├── nginx-juice-shop.conf
+        ├── splunk-forwarder-inputs.conf
         ├── splunk-searches.spl
+        ├── wazuh-agent-localfile.xml
         ├── wazuh-queries.txt
+        ├── wazuh-rules.xml
         └── screenshots/
             └── README.md
-    ├── T1087-002-domain-account-discovery/
-        ├── NIST-MITRE-Domain-Account-Discovery.md
-        ├── splunk-searches.spl
-        ├── wazuh-queries.txt
-        └── screenshots/
-            ├── README.md
-            └── 18 evidence screenshots
-    └── T1021-002-smb-windows-admin-shares/
-        ├── NIST-MITRE-SMB-Windows-Admin-Shares.md
-        ├── splunk-searches.spl
-        ├── wazuh-queries.txt
-        └── screenshots/
-            ├── README.md
-            └── 18 evidence screenshots
 ```
 
 ## Evidence standards
@@ -310,6 +294,10 @@ Only sanitized evidence is published. Passwords, application passwords, API toke
 - SMB network-logon and Windows administrative-share detection across source and destination endpoints
 - NIST CSF 2.0 and MITRE ATT&CK mapping
 - Vulnerability assessment and packet analysis
+- Web application testing with Burp Suite Proxy, HTTP history and Repeater
+- Dockerized OWASP Juice Shop deployment behind an Nginx reverse proxy
+- Nginx access-log onboarding, HTTP field extraction and exposed-resource detection
+- Wazuh custom web rules and Splunk web-security alert engineering
 - Incident containment, recovery and technical documentation
 
 ## Disclaimer
