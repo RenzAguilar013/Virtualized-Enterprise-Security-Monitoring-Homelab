@@ -68,6 +68,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Nessus vulnerability scanning and remediation evidence
 - OWASP Juice Shop request inspection through Burp Suite Proxy, HTTP history and Repeater
 - Exposed-directory and document-access monitoring for `/ftp/` resources
+- Web authentication-failure monitoring, five-event threshold correlation and post-failure successful-login analysis
 - Source IP, destination IP, user, host, port, URI, HTTP status and timeline correlation
 
 ## Detection engineering and validation
@@ -86,6 +87,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Deployed OWASP Juice Shop behind Nginx on WEB01 with Docker loopback binding and dual Wazuh/Splunk telemetry
 - Validated OWASP 2025 A01/A02 exposed-resource access through Burp Suite and correlated HTTP `200` responses in Nginx, Wazuh and Splunk
 - Authored Wazuh web rules and a Splunk scheduled alert for `/ftp` directory or document access
+- Validated OWASP 2025 A07 by replaying a bounded five-request HTTP `401` sequence and confirming the absence of rate limiting or temporary lockout
+- Correlated repeated Juice Shop authentication failures with Wazuh rules `119972`/`119973` and a high-severity Splunk alert
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -104,11 +107,12 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [Domain Account Discovery](tests/T1087-002-domain-account-discovery/NIST-MITRE-Domain-Account-Discovery.md) | `T1087.002` | Native and PowerShell/ADSI account discovery, Sysmon Event 1, PowerShell Event 4104, Wazuh, Splunk dashboard, alert, email and recovery |
 | [SMB/Windows Admin Shares](tests/T1021-002-smb-windows-admin-shares/NIST-MITRE-SMB-Windows-Admin-Shares.md) | `T1021.002` | Controlled IPC$ connection, Events 4624/5140/5145, Sysmon Event 3, source/destination correlation, Wazuh, Splunk dashboard, alert, email and cleanup |
 
-## OWASP web application security exercise
+## OWASP web application security exercises
 
 | Exercise | OWASP mapping | Evidence |
 |---|---|---|
 | [Juice Shop exposed-resource detection](tests/owasp-top-10-2025/A01-A02-exposed-resources/OWASP-A01-A02-Exposed-Resources-Validation.md) | **A01:2025 Broken Access Control**, **A02:2025 Security Misconfiguration** | WEB01, Docker, Nginx, Burp Suite, exposed `/ftp/` resources, Wazuh custom rules, Splunk investigation, triggered alert and email notification |
+| [Authentication failure and rate-limit validation](tests/owasp-top-10-2025/A07-authentication-failures/OWASP-A07-Authentication-Failures-Validation.md) | **A07:2025 Authentication Failures** | Controlled HTTP `401` sequence, immediate post-failure `200`, Nginx, Wazuh rules `119972`/`119973`, Splunk threshold alert and SMTP notification |
 
 ## Completed response workflows
 
@@ -213,6 +217,16 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 6. Added Wazuh rule `119971` and a high-severity Splunk alert, then verified triggered-alert and SMTP email workflows.
 7. Documented OWASP 2025 A01/A02 mappings, containment controls, remediation guidance and evidence-handling requirements.
 
+### OWASP Juice Shop authentication failures
+
+1. Established a successful-login baseline with a fictional lab-only Juice Shop account.
+2. Captured and replayed `POST /rest/user/login` requests through Burp Suite Repeater.
+3. Sent five bounded invalid-password requests and recorded HTTP `401` responses without an HTTP `429`, progressive delay or temporary lockout.
+4. Confirmed an immediate valid login returned HTTP `200` after the failure sequence.
+5. Correlated the source IP, method, URI, status, failure count and timeline in Nginx and Splunk.
+6. Added Wazuh rule `119972` for individual failures and rule `119973` for five failures from one source within five minutes.
+7. Triggered a high-severity Splunk alert, restored DNS/SMTP egress, validated email notification and confirmed application and monitoring-service recovery.
+
 ## Documentation
 
 - [Architecture](docs/architecture.md)
@@ -266,14 +280,21 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
         │   ├── nginx-juice-shop.conf
         │   ├── splunk-forwarder-inputs.conf
         │   └── wazuh-agent-localfile.xml
-        └── A01-A02-exposed-resources/
-            ├── OWASP-A01-A02-Exposed-Resources-Validation.md
+        ├── A01-A02-exposed-resources/
+        │   ├── OWASP-A01-A02-Exposed-Resources-Validation.md
+        │   ├── splunk-searches.spl
+        │   ├── wazuh-queries.txt
+        │   ├── wazuh-rules.xml
+        │   └── screenshots/
+        │       ├── README.md
+        │       └── 41 evidence screenshots
+        └── A07-authentication-failures/
+            ├── OWASP-A07-Authentication-Failures-Validation.md
             ├── splunk-searches.spl
             ├── wazuh-queries.txt
             ├── wazuh-rules.xml
             └── screenshots/
-                ├── README.md
-                └── 41 evidence screenshots
+                └── README.md
 ```
 
 ## Evidence standards
@@ -301,6 +322,7 @@ Only sanitized evidence is published. Passwords, application passwords, API toke
 - Web application testing with Burp Suite Proxy, HTTP history and Repeater
 - Dockerized OWASP Juice Shop deployment behind an Nginx reverse proxy
 - Nginx access-log onboarding, HTTP field extraction and exposed-resource detection
+- Authentication-control testing, rate-limit and lockout validation
 - Wazuh custom web rules and Splunk web-security alert engineering
 - Incident containment, recovery and technical documentation
 

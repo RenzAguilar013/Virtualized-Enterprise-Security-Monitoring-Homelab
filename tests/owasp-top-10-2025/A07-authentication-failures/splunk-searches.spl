@@ -1,0 +1,52 @@
+/* 1. Authentication request timeline */
+index=web earliest=-60m "/rest/user/login"
+| rex field=_raw "^(?<src_ip>\S+)\s+\S+\s+\S+\s+\[[^\]]+\]\s+\"(?<http_method>\S+)\s+(?<uri>\S+)\s+HTTP/[^\"]+\"\s+(?<status>\d{3})"
+| eval outcome=case(
+    status=200, "Successful login",
+    status=401, "Failed login",
+    status=429, "Rate limited",
+    true(), "Other"
+  )
+| table _time host src_ip http_method uri status outcome
+| sort _time
+
+/* 2. Investigation: repeated failures in the selected period */
+index=web earliest=-60m "/rest/user/login"
+| rex field=_raw "^(?<src_ip>\S+)\s+\S+\s+\S+\s+\[[^\]]+\]\s+\"(?<http_method>\S+)\s+(?<uri>\S+)\s+HTTP/[^\"]+\"\s+(?<status>\d{3})"
+| search http_method="POST" uri="/rest/user/login" status="401"
+| stats count AS failed_attempts
+        earliest(_time) AS first_seen
+        latest(_time) AS last_seen
+        BY host src_ip uri
+| where failed_attempts >= 5
+| convert ctime(first_seen) ctime(last_seen)
+| eval severity="high"
+| eval detection="OWASP A07 - Repeated Authentication Failures"
+| table host src_ip uri failed_attempts first_seen last_seen severity detection
+
+/* 3. Scheduled alert: run every minute over the last five minutes */
+index=web earliest=-5m "/rest/user/login"
+| rex field=_raw "^(?<src_ip>\S+)\s+\S+\s+\S+\s+\[[^\]]+\]\s+\"(?<http_method>\S+)\s+(?<uri>\S+)\s+HTTP/[^\"]+\"\s+(?<status>\d{3})"
+| search http_method="POST" uri="/rest/user/login" status="401"
+| stats count AS failed_attempts
+        earliest(_time) AS first_seen
+        latest(_time) AS last_seen
+        BY host src_ip uri
+| where failed_attempts >= 5
+| convert ctime(first_seen) ctime(last_seen)
+| eval severity="high"
+| eval detection="OWASP A07 - Repeated Authentication Failures"
+| table host src_ip uri failed_attempts first_seen last_seen severity detection
+
+/* 4. Failed-login sequence followed by successful authentication */
+index=web earliest=-30m "/rest/user/login"
+| rex field=_raw "^(?<src_ip>\S+)\s+\S+\s+\S+\s+\[[^\]]+\]\s+\"(?<http_method>\S+)\s+(?<uri>\S+)\s+HTTP/[^\"]+\"\s+(?<status>\d{3})"
+| search http_method="POST" uri="/rest/user/login"
+| eval failed=if(status=401,1,0), successful=if(status=200,1,0)
+| stats sum(failed) AS failed_attempts
+        sum(successful) AS successful_logins
+        latest(status) AS latest_status
+        BY host src_ip
+| where failed_attempts >= 5 AND successful_logins >= 1
+| eval finding="Repeated failures followed by successful authentication"
+| table host src_ip failed_attempts successful_logins latest_status finding

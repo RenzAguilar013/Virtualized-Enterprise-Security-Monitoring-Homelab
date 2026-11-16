@@ -1,0 +1,11 @@
+# Individual Juice Shop authentication failures
+agent.name:"WEB01-10.10.10.70" AND rule.id:"119972"
+
+# Five failures from one source within five minutes
+agent.name:"WEB01-10.10.10.70" AND rule.id:"119973"
+
+# Both custom A07 rules
+agent.name:"WEB01-10.10.10.70" AND (rule.id:"119972" OR rule.id:"119973")
+
+# Broad fallback when validating decoding
+agent.name:"WEB01-10.10.10.70" AND (data.url:"/rest/user/login" OR full_log:"/rest/user/login")

@@ -103,7 +103,7 @@
     <rect x="15" y="51" width="42" height="42" rx="21" fill="#f04b24"/><text x="36" y="78" text-anchor="middle" class="h white">W</text>
     <text x="68" y="58" class="h orange">Wazuh SIEM</text><text x="68" y="80" class="ip navy">10.10.10.30</text>
     <text x="16" y="111" class="t">• Manager, indexer and dashboard</text><text x="16" y="131" class="t">• Endpoint and web-log correlation</text>
-    <text x="16" y="151" class="t">• Rules 119970 / 119971</text><text x="16" y="171" class="t">• Threat hunting and agent health</text>
+    <text x="16" y="151" class="t">• Web rules 119970–119973</text><text x="16" y="171" class="t">• Threat hunting and agent health</text>
     <rect x="16" y="197" width="118" height="17" class="badge" fill="#fff0eb"/><text x="75" y="209" text-anchor="middle" class="s bold orange">ENDPOINT SIEM</text>
   </g>
   <g transform="translate(895 420)">
@@ -163,12 +163,12 @@
 
   <rect x="795" y="1040" width="780" height="145" class="section" stroke="#087f8c"/>
   <text x="815" y="1068" class="h teal">OWASP Juice Shop + Burp Suite Validation</text>
-  <text x="815" y="1093" class="t">A01:2025 Broken Access Control • A02:2025 Security Misconfiguration</text>
-  <text x="815" y="1116" class="t">Exposed /ftp directory and unauthenticated document access</text>
-  <text x="815" y="1142" class="s">Burp evidence • Nginx telemetry • Wazuh 119971 • Splunk alert • SMTP email</text>
+  <text x="815" y="1093" class="t">A01 Access Control • A02 Misconfiguration • A07 Authentication Failures</text>
+  <text x="815" y="1116" class="t">Exposed resources • Five HTTP 401s • No rate limit or account lockout</text>
+  <text x="815" y="1142" class="s">Burp • Nginx • Wazuh 119971/119973 • Splunk alert • SMTP email</text>
   <rect x="815" y="1155" width="270" height="20" class="badge" fill="#e8f7f8"/><text x="950" y="1169" text-anchor="middle" class="s bold teal">END-TO-END WEB DETECTION</text>
 
   <rect x="25" y="1210" width="1550" height="30" rx="6" fill="#f7f9fc" stroke="#a7b3c5"/>
   <text x="40" y="1230" class="s"><tspan class="bold">Status:</tspan> Operational • Isolated and authorized testing only • No WAN exposure</text>
-  <text x="1560" y="1230" text-anchor="end" class="s">Updated 15 November 2026</text>
+  <text x="1560" y="1230" text-anchor="end" class="s">Updated 16 November 2026</text>
 </svg>
