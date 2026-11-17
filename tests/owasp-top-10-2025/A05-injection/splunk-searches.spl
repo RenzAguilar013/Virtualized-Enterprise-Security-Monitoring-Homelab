@@ -1,0 +1,21 @@
+/* 1. Investigation timeline: run this search block independently. */
+index=web earliest=-60m source="/var/log/nginx/juice-shop-access.log" "/rest/products/search"
+| rex field=_raw "^(?<src_ip>\S+)\s+\S+\s+\S+\s+\[[^\]]+\]\s+\"(?<http_method>\S+)\s+(?<uri>\S+)\s+HTTP/[^\"]+\"\s+(?<status>\d{3})"
+| eval decoded_uri=urldecode(uri)
+| table _time host src_ip http_method decoded_uri status
+| sort 0 _time
+
+/* 2. Exercise-specific detection. Schedule every minute over the last five minutes.
+   A match indicates an attempt, not successful exploitation.
+   Confirm field extraction and actual results before enabling the alert. */
+index=web earliest=-5m source="/var/log/nginx/juice-shop-access.log" "/rest/products/search"
+| rex field=_raw "^(?<src_ip>\S+)\s+\S+\s+\S+\s+\[[^\]]+\]\s+\"(?<http_method>\S+)\s+(?<uri>\S+)\s+HTTP/[^\"]+\"\s+(?<status>\d{3})"
+| eval decoded_uri=urldecode(uri)
+| where like(decoded_uri, "%AND 1=1--%") OR like(decoded_uri, "%AND 1=0--%")
+| stats count AS requests values(decoded_uri) AS observed_requests values(status) AS http_statuses BY host src_ip
+| eval detection="OWASP A05 - Suspected SQL Injection in Product Search"
+
+/* 3. Troubleshooting: discover source and host without the path filter. */
+index=web earliest=-24h "/rest/products/search"
+| table _time host source _raw
+| sort 0 _time

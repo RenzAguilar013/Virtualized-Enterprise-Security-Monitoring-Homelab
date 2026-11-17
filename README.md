@@ -69,6 +69,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - OWASP Juice Shop request inspection through Burp Suite Proxy, HTTP history and Repeater
 - Exposed-directory and document-access monitoring for `/ftp/` resources
 - Web authentication-failure monitoring, five-event threshold correlation and post-failure successful-login analysis
+- Controlled SQL-injection testing of the Juice Shop product-search API with Burp Repeater
+- Wazuh SQL-injection alert observed for a single-quote product-search request
 - Source IP, destination IP, user, host, port, URI, HTTP status and timeline correlation
 
 ## Detection engineering and validation
@@ -112,7 +114,21 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | Exercise | OWASP mapping | Evidence |
 |---|---|---|
 | [Juice Shop exposed-resource detection](tests/owasp-top-10-2025/A01-A02-exposed-resources/OWASP-A01-A02-Exposed-Resources-Validation.md) | **A01:2025 Broken Access Control**, **A02:2025 Security Misconfiguration** | WEB01, Docker, Nginx, Burp Suite, exposed `/ftp/` resources, Wazuh custom rules, Splunk investigation, triggered alert and email notification |
+| [Product-search SQL injection](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md) | **A05:2025 Injection** | Controlled Burp test cases; user-reported Wazuh SQL-injection alert for `%27`; remaining evidence confirmation in progress |
 | [Authentication failure and rate-limit validation](tests/owasp-top-10-2025/A07-authentication-failures/OWASP-A07-Authentication-Failures-Validation.md) | **A07:2025 Authentication Failures** | Controlled HTTP `401` sequence, immediate post-failure `200`, Nginx, Wazuh rules `119972`/`119973`, Splunk threshold alert and SMTP notification |
+
+### A05 product-search injection activity
+
+Exercise 3 extends the web lab with controlled SQL-injection tests against
+`GET /rest/products/search`. A Wazuh alert with a SQL-injection description was
+observed for the encoded single-quote request (`%27`) from WEB01's dedicated
+Nginx access log. The registered Wazuh agent name is `WEB01-10.10.10.70`.
+
+The activity includes a normal-search baseline, a single-quote probe, a Boolean
+true/false test pair, Splunk investigation and alert queries, and recovery checks.
+The Boolean response comparison, A05 Splunk alert/email delivery, rule ID, and
+recovery outcomes remain pending evidence confirmation. Detection of a request
+does not establish successful exploitation or remediation.
 
 ## Completed response workflows
 
@@ -230,6 +246,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 ## Documentation
 
 - [Architecture](docs/architecture.md)
+- [Repository structure and A05 evidence layout](docs/repository-structure.md)
 - [VMware network](docs/vmware-network.md)
 - [FortiGate configuration](docs/fortigate-configuration.md)
 - [Firewall policies](docs/firewall-policies.md)
@@ -251,6 +268,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 │   └── topology.svg
 ├── docs/
 │   ├── architecture.md
+│   ├── repository-structure.md
 │   ├── active-directory.md
 │   ├── auditd-configuration.md
 │   ├── fortigate-configuration.md
@@ -288,6 +306,13 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
         │   └── screenshots/
         │       ├── README.md
         │       └── 41 evidence screenshots
+        ├── A05-injection/
+        │   ├── OWASP-A05-SQL-Injection-Validation.md
+        │   ├── burp-test-cases.md
+        │   ├── splunk-searches.spl
+        │   ├── wazuh-queries.txt
+        │   └── screenshots/
+        │       └── README.md
         └── A07-authentication-failures/
             ├── OWASP-A07-Authentication-Failures-Validation.md
             ├── splunk-searches.spl
@@ -296,6 +321,9 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
             └── screenshots/
                 └── README.md
 ```
+
+The A05 screenshot manifest lists the intended evidence filenames. A05 image files
+are not included until sanitized originals are uploaded.
 
 ## Evidence standards
 
@@ -323,12 +351,10 @@ Only sanitized evidence is published. Passwords, application passwords, API toke
 - Dockerized OWASP Juice Shop deployment behind an Nginx reverse proxy
 - Nginx access-log onboarding, HTTP field extraction and exposed-resource detection
 - Authentication-control testing, rate-limit and lockout validation
+- Controlled SQL-injection testing and investigation of Wazuh web alerts
 - Wazuh custom web rules and Splunk web-security alert engineering
 - Incident containment, recovery and technical documentation
 
 ## Disclaimer
 
 All security testing documented in this repository was conducted only against privately owned and authorized virtual machines in an isolated homelab. The material is intended for defensive security education and portfolio demonstration.
-
-
-

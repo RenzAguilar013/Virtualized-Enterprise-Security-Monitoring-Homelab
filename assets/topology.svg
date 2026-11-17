@@ -1,174 +1,139 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1260" viewBox="0 0 1600 1260">
-  <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#243b64"/>
-    </marker>
-    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#1e3a5f" flood-opacity=".13"/>
-    </filter>
-    <style>
-      .title{font:700 31px Arial,sans-serif;fill:#112d70}.subtitle{font:700 16px Arial,sans-serif;fill:#1559bd}
-      .h{font:700 15px Arial,sans-serif}.ip{font:700 13px Arial,sans-serif}.t{font:400 12px Arial,sans-serif;fill:#172033}.s{font:400 11px Arial,sans-serif;fill:#303a50}
-      .card{fill:#fff;stroke-width:2;rx:8;filter:url(#soft)}.section{fill:#fff;stroke-width:1.7;rx:7}
-      .line{fill:none;stroke:#243b64;stroke-width:2}.arrow{fill:none;stroke:#243b64;stroke-width:2;marker-end:url(#arrow)}
-      .dash{fill:none;stroke:#7c3cc4;stroke-width:2;stroke-dasharray:6 4;marker-end:url(#arrow)}
-      .green{fill:#137c3e}.blue{fill:#145cbb}.purple{fill:#6e31b7}.orange{fill:#e65018}.pink{fill:#c51d65}.navy{fill:#112d70}.teal{fill:#087f8c}
-      .badge{rx:5}.white{fill:#fff}.bold{font-weight:700}
-    </style>
-  </defs>
-  <rect width="1600" height="1260" fill="#fff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1510" viewBox="0 0 1800 1510" role="img" aria-labelledby="title desc">
+<title id="title">Virtualized Enterprise Security and Monitoring Homelab</title>
+<desc id="desc">FortiGate links VMware NAT to an isolated LAN with DC01, Renz, Linux01, Kali, WEB01, Wazuh and Splunk. WEB01 proxies to a loopback-only Juice Shop container. Dashed lines show logical telemetry, not an inline security device. A05 single-quote alert observed; remaining evidence review in progress.</desc>
+<defs><marker id="net" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#486078"/></marker><marker id="tel" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#7557b4"/></marker>
+<style>text{font-family:Arial,DejaVu Sans,sans-serif;fill:#17324d}.h{font-size:20px;font-weight:700}.b{font-size:16px}.s{font-size:14px}.muted{fill:#4c6378}.net{fill:none;stroke:#486078;stroke-width:2.5}.tel{fill:none;stroke:#7557b4;stroke-width:2.5;stroke-dasharray:8 6;marker-end:url(#tel)}</style></defs>
+<rect width="1800" height="1510" fill="#f6f8fb"/>
+<text x="42" y="52" font-size="30" font-weight="700">Virtualized Enterprise Security and Monitoring Homelab</text>
+<text x="42" y="83" class="b muted">VMware Workstation | FortiGate | Active Directory | Wazuh | Splunk | Burp Suite | OWASP Juice Shop</text>
 
-  <!-- Header -->
-  <g transform="translate(18 15)">
-    <path d="M0 28L27 4l27 24v35H8V28Z" fill="none" stroke="#135ee6" stroke-width="3"/>
-    <rect x="15" y="31" width="28" height="20" fill="#183a67"/><rect x="39" y="47" width="9" height="9" fill="#18a558"/>
-  </g>
-  <text x="85" y="45" class="title">Virtualized Enterprise Security &amp; Monitoring Homelab</text>
-  <text x="87" y="70" class="subtitle">FortiGate • Active Directory • Wazuh • Splunk • Kali/Burp • Nginx • OWASP Juice Shop • Docker</text>
+<rect x="42" y="120" width="300" height="136" rx="12" fill="#fff" stroke="#2366a2" stroke-width="1.6"/>
+<rect x="42" y="120" width="300" height="7" rx="3" fill="#2366a2"/>
+<text x="60" y="156" class="h" >Internet / VMware host</text>
+<text x="60" y="184" class="b" >Upstream NAT</text>
+<text x="60" y="218" class="s" >Lab egress through VMnet8</text>
+<rect x="414" y="120" width="370" height="136" rx="12" fill="#fff" stroke="#2366a2" stroke-width="1.6"/>
+<rect x="414" y="120" width="370" height="7" rx="3" fill="#2366a2"/>
+<text x="432" y="156" class="h" >VMnet8 NAT</text>
+<text x="432" y="184" class="b" >192.168.100.0/24</text>
+<text x="432" y="218" class="s" >NAT gateway: 192.168.100.2</text>
+<rect x="856" y="120" width="496" height="136" rx="12" fill="#fff" stroke="#b65536" stroke-width="1.6"/>
+<rect x="856" y="120" width="496" height="7" rx="3" fill="#b65536"/>
+<text x="874" y="156" class="h" >FortiGate VM</text>
+<text x="874" y="184" class="b" >WAN 192.168.100.10 | LAN 10.10.10.1</text>
+<text x="874" y="218" class="s" >Firewall, routing, NAT, DHCP and syslog</text>
+<path d="M342 188H414" class="net"/>
+<path d="M784 188H856" class="net"/>
+<path d="M1352 188H1708V328" class="net"/>
+<text x="1400" y="160" class="s" >No WAN port-forward</text>
+<rect x="24" y="290" width="1752" height="680" rx="16" fill="#eef4fa" stroke="#afc6db" stroke-width="1.6"/>
+<path d="M1708 290V352" class="net"/>
+<text x="44" y="322" class="h" >VMnet2 host-only security LAN  |  10.10.10.0/24  |  Gateway 10.10.10.1  |  DNS 10.10.10.10</text>
+<path d="M64 352H1736" class="net"/>
+<path d="M202 352V380" class="net"/>
+<path d="M550 352V380" class="net"/>
+<path d="M898 352V380" class="net"/>
+<path d="M1246 352V380" class="net"/>
+<path d="M1594 352V380" class="net"/>
+<rect x="42" y="380" width="324" height="230" rx="12" fill="#fff" stroke="#2366a2" stroke-width="1.6"/>
+<rect x="42" y="380" width="324" height="7" rx="3" fill="#2366a2"/>
+<text x="60" y="416" class="h" >DC01</text>
+<text x="60" y="444" class="b" >10.10.10.10</text>
+<text x="60" y="478" class="s" >Windows Server / AD DS / DNS</text>
+<text x="60" y="502" class="s" >Group Policy and SMB auditing</text>
+<text x="60" y="526" class="s" >Security, Sysmon and PowerShell</text>
+<text x="60" y="550" class="s" >Wazuh Agent + Splunk UF</text>
+<rect x="390" y="380" width="324" height="230" rx="12" fill="#fff" stroke="#2366a2" stroke-width="1.6"/>
+<rect x="390" y="380" width="324" height="7" rx="3" fill="#2366a2"/>
+<text x="408" y="416" class="h" >Renz</text>
+<text x="408" y="444" class="b" >10.10.10.20</text>
+<text x="408" y="478" class="s" >Windows 11 domain endpoint</text>
+<text x="408" y="502" class="s" >Sysmon and PowerShell telemetry</text>
+<text x="408" y="526" class="s" >Atomic Red Team and Sigma</text>
+<text x="408" y="550" class="s" >Wazuh Agent + Splunk UF</text>
+<rect x="738" y="380" width="324" height="230" rx="12" fill="#fff" stroke="#2366a2" stroke-width="1.6"/>
+<rect x="738" y="380" width="324" height="7" rx="3" fill="#2366a2"/>
+<text x="756" y="416" class="h" >Linux01</text>
+<text x="756" y="444" class="b" >10.10.10.50</text>
+<text x="756" y="478" class="s" >Ubuntu / auditd / SSH / sudo</text>
+<text x="756" y="502" class="s" >FortiGate syslog receiver :514</text>
+<text x="756" y="526" class="s" >Execution and file telemetry</text>
+<text x="756" y="550" class="s" >Wazuh Agent + Splunk UF</text>
+<rect x="1086" y="380" width="324" height="230" rx="12" fill="#fff" stroke="#7557b4" stroke-width="1.6"/>
+<rect x="1086" y="380" width="324" height="7" rx="3" fill="#7557b4"/>
+<text x="1104" y="416" class="h" >Kali Linux</text>
+<text x="1104" y="444" class="b" >10.10.10.40</text>
+<text x="1104" y="478" class="s" >Burp Proxy and Repeater</text>
+<text x="1104" y="502" class="s" >Nmap, Wireshark, Nessus, Hydra</text>
+<text x="1104" y="526" class="s" >Authorized test source</text>
+<text x="1104" y="550" class="s" >Same-subnet HTTP to WEB01</text>
+<rect x="1434" y="380" width="324" height="230" rx="12" fill="#fff" stroke="#087d87" stroke-width="1.6"/>
+<rect x="1434" y="380" width="324" height="7" rx="3" fill="#087d87"/>
+<text x="1452" y="416" class="h" >WEB01</text>
+<text x="1452" y="444" class="b" >10.10.10.70</text>
+<text x="1452" y="478" class="s" >Nginx :80 on the lab LAN</text>
+<text x="1452" y="502" class="s" >Docker / OWASP Juice Shop</text>
+<text x="1452" y="526" class="s" >Container: 127.0.0.1:3000</text>
+<text x="1452" y="550" class="s" >Wazuh Agent + Splunk UF</text>
+<path d="M1410 495H1434" class="net"/>
+<text x="1098" y="632" class="s" >Kali → WEB01: scoped HTTP testing; no FortiGate hop required</text>
+<path d="M32 352V825H390" class="net"/>
+<path d="M1768 352V825H1410" class="net"/>
 
-  <!-- Core network -->
-  <g transform="translate(245 88)">
-    <path d="M46 24c-3-15 17-25 29-15 10-15 36-6 35 12 15 0 20 22 5 29H46c-20-2-19-25 0-26Z" fill="#fff" stroke="#1559bd" stroke-width="2"/>
-    <text x="79" y="39" text-anchor="middle" class="h navy">Internet</text>
-  </g>
-  <rect x="220" y="150" width="210" height="52" class="section" stroke="#1559bd"/>
-  <text x="325" y="172" text-anchor="middle" class="h blue">VMware NAT (VMnet8)</text>
-  <text x="325" y="191" text-anchor="middle" class="s">Gateway: 192.168.100.2</text>
-  <path d="M325 138V150" class="line"/>
-
-  <rect x="265" y="222" width="120" height="80" rx="10" fill="#e52620"/>
-  <g fill="#fff"><rect x="285" y="240" width="15" height="15"/><rect x="306" y="240" width="15" height="15"/><rect x="327" y="240" width="15" height="15"/><rect x="285" y="261" width="15" height="15"/><rect x="306" y="261" width="15" height="15"/><rect x="327" y="261" width="15" height="15"/></g>
-  <text x="400" y="246" class="h" fill="#333">FortiGate VM</text>
-  <text x="400" y="267" class="ip orange">Firewall • NAT • DHCP • Syslog</text>
-  <text x="400" y="288" class="s">WAN 192.168.100.10 / LAN 10.10.10.1</text>
-  <path d="M325 202V222" class="line"/>
-
-  <g transform="translate(245 318)">
-    <rect width="160" height="42" rx="5" fill="#263238"/>
-    <g fill="#cfe8ff" stroke="#fff"><rect x="14" y="11" width="18" height="16"/><rect x="38" y="11" width="18" height="16"/><rect x="62" y="11" width="18" height="16"/><rect x="86" y="11" width="18" height="16"/><rect x="110" y="11" width="18" height="16"/><rect x="134" y="11" width="12" height="16"/></g>
-  </g>
-  <text x="325" y="377" text-anchor="middle" class="s bold">VMnet2 Host-only LAN • 10.10.10.0/24</text>
-  <path d="M325 302V318" class="line"/>
-
-  <!-- Kali testing node -->
-  <rect x="575" y="94" width="340" height="205" class="card" stroke="#7c3cc4" stroke-dasharray="6 4"/>
-  <rect x="595" y="112" width="60" height="55" rx="8" fill="#151515"/><text x="625" y="146" text-anchor="middle" class="h white">KALI</text>
-  <text x="675" y="125" class="h purple">Kali Linux • Security Validation</text><text x="675" y="146" class="ip navy">10.10.10.40</text>
-  <text x="675" y="168" class="t">• Burp Suite Community + scoped Firefox proxy</text><text x="675" y="187" class="t">• Nmap, Wireshark, Nessus and Hydra</text>
-  <text x="675" y="206" class="t">• Proxy interception and Repeater validation</text><text x="675" y="225" class="t">• Authorized OWASP and ATT&amp;CK exercises</text>
-  <rect x="600" y="260" width="290" height="27" class="badge" fill="#f2eaff" stroke="#7c3cc4"/>
-  <text x="745" y="279" text-anchor="middle" class="s bold">AUTHORIZED TEST SOURCE • 10.10.10.40</text>
-  <path d="M405 339H745V299" class="line"/>
-
-  <!-- Network summary -->
-  <rect x="1000" y="18" width="575" height="320" class="card" stroke="#1559bd"/>
-  <text x="1020" y="45" class="h blue">▣  Network Summary</text>
-  <text x="1020" y="71" class="t bold">WAN:</text><text x="1085" y="71" class="t">VMnet8 NAT • 192.168.100.0/24 • GW 192.168.100.2</text>
-  <text x="1020" y="94" class="t bold">LAN:</text><text x="1085" y="94" class="t">VMnet2 Host-only • 10.10.10.0/24 • GW 10.10.10.1</text>
-  <text x="1020" y="117" class="t bold">DNS:</text><text x="1085" y="117" class="t">10.10.10.10 (DC01)</text>
-  <text x="1020" y="142" class="t bold">10.10.10.10</text><text x="1125" y="142" class="t">DC01 • AD DS • DNS</text>
-  <text x="1020" y="164" class="t bold">10.10.10.20</text><text x="1125" y="164" class="t">Renz • Windows 11 • Atomic Red Team</text>
-  <text x="1020" y="186" class="t bold">10.10.10.30</text><text x="1125" y="186" class="t">Wazuh Manager / SIEM</text>
-  <text x="1020" y="208" class="t bold">10.10.10.40</text><text x="1125" y="208" class="t">Kali • Burp • Nmap • Nessus • Hydra</text>
-  <text x="1020" y="230" class="t bold">10.10.10.50</text><text x="1125" y="230" class="t">Linux01 • auditd • FortiGate syslog</text>
-  <text x="1020" y="252" class="t bold">10.10.10.60</text><text x="1125" y="252" class="t">Splunk Enterprise • SMTP alerting</text>
-  <text x="1020" y="274" class="t bold">10.10.10.70</text><text x="1125" y="274" class="t">WEB01 • Nginx • Docker • Juice Shop</text>
-  <text x="1020" y="302" class="s">Web target remains internal; no FortiGate WAN port-forward.</text>
-  <text x="1020" y="320" class="s">Telemetry: Wazuh 4.14.2 + Splunk UF 10.0.1</text>
-
-  <!-- LAN bus -->
-  <path d="M70 400H1530" class="line"/>
-  <path d="M325 360V400" class="line"/>
-  <path d="M165 400V420M455 400V420M745 400V420M1035 400V420M1325 400V420" class="line"/>
-
-  <!-- Host cards -->
-  <g transform="translate(25 420)">
-    <rect width="280" height="220" class="card" stroke="#1559bd"/><rect width="280" height="35" rx="7" fill="#edf4ff"/>
-    <rect x="15" y="51" width="42" height="42" rx="6" fill="#1559bd"/><text x="36" y="78" text-anchor="middle" class="h white">AD</text>
-    <text x="68" y="58" class="h blue">DC01 • Windows Server</text><text x="68" y="80" class="ip navy">10.10.10.10</text>
-    <text x="16" y="111" class="t">• Active Directory Domain Services</text><text x="16" y="131" class="t">• DNS and Group Policy</text>
-    <text x="16" y="151" class="t">• Security, Sysmon and SMB telemetry</text><text x="16" y="171" class="t">• Wazuh Agent + Splunk Forwarder</text>
-    <rect x="16" y="197" width="145" height="17" class="badge" fill="#e8f8ee"/><text x="88" y="209" text-anchor="middle" class="s bold green">IDENTITY MONITORED</text>
-  </g>
-  <g transform="translate(315 420)">
-    <rect width="280" height="220" class="card" stroke="#1559bd"/><rect width="280" height="35" rx="7" fill="#edf4ff"/>
-    <rect x="15" y="51" width="42" height="42" rx="6" fill="#1278d1"/><text x="36" y="78" text-anchor="middle" class="h white">WIN</text>
-    <text x="68" y="58" class="h blue">Renz • Windows 11</text><text x="68" y="80" class="ip navy">10.10.10.20</text>
-    <text x="16" y="111" class="t">• Sysmon and PowerShell telemetry</text><text x="16" y="131" class="t">• Atomic Red Team + Sigma</text>
-    <text x="16" y="151" class="t">• Execution, persistence, discovery and SMB</text><text x="16" y="171" class="t">• Wazuh Agent + Splunk Forwarder</text>
-    <rect x="16" y="197" width="152" height="17" class="badge" fill="#e8f8ee"/><text x="92" y="209" text-anchor="middle" class="s bold green">DETECTION VALIDATED</text>
-  </g>
-  <g transform="translate(605 420)">
-    <rect width="280" height="220" class="card" stroke="#f04b24"/><rect width="280" height="35" rx="7" fill="#fff0eb"/>
-    <rect x="15" y="51" width="42" height="42" rx="21" fill="#f04b24"/><text x="36" y="78" text-anchor="middle" class="h white">W</text>
-    <text x="68" y="58" class="h orange">Wazuh SIEM</text><text x="68" y="80" class="ip navy">10.10.10.30</text>
-    <text x="16" y="111" class="t">• Manager, indexer and dashboard</text><text x="16" y="131" class="t">• Endpoint and web-log correlation</text>
-    <text x="16" y="151" class="t">• Web rules 119970–119973</text><text x="16" y="171" class="t">• Threat hunting and agent health</text>
-    <rect x="16" y="197" width="118" height="17" class="badge" fill="#fff0eb"/><text x="75" y="209" text-anchor="middle" class="s bold orange">ENDPOINT SIEM</text>
-  </g>
-  <g transform="translate(895 420)">
-    <rect width="280" height="220" class="card" stroke="#d68a00"/><rect width="280" height="35" rx="7" fill="#fff7e5"/>
-    <rect x="15" y="51" width="42" height="42" rx="21" fill="#ef5b19"/><text x="36" y="78" text-anchor="middle" class="h white">U</text>
-    <text x="68" y="58" class="h orange">Linux01 • Ubuntu</text><text x="68" y="80" class="ip navy">10.10.10.50</text>
-    <text x="16" y="111" class="t">• auditd execution and file telemetry</text><text x="16" y="131" class="t">• SSH, sudo, authentication logs</text>
-    <text x="16" y="151" class="t">• FortiGate syslog receiver :514</text><text x="16" y="171" class="t">• Wazuh Agent + Splunk Forwarder</text>
-    <rect x="16" y="197" width="142" height="17" class="badge" fill="#fff7e5"/><text x="87" y="209" text-anchor="middle" class="s bold orange">LINUX TELEMETRY</text>
-  </g>
-  <g transform="translate(1185 420)">
-    <rect width="390" height="220" class="card" stroke="#168444"/><rect width="390" height="35" rx="7" fill="#ecf9f0"/>
-    <rect x="15" y="51" width="42" height="42" rx="8" fill="#168444"/><text x="36" y="78" text-anchor="middle" class="h white">S</text>
-    <text x="68" y="58" class="h green">Splunk Enterprise</text><text x="68" y="80" class="ip navy">10.10.10.60</text>
-    <text x="16" y="111" class="t">• Centralized indexing and correlation</text><text x="16" y="131" class="t">• Dedicated web index and Nginx sources</text>
-    <text x="16" y="151" class="t">• SPL field extraction and investigation</text><text x="16" y="171" class="t">• Scheduled alerts + Gmail SMTP actions</text>
-    <rect x="16" y="197" width="142" height="17" class="badge" fill="#ecf9f0"/><text x="87" y="209" text-anchor="middle" class="s bold green">CENTRAL SIEM</text>
-  </g>
-
-  <!-- WEB01 application tier -->
-  <path d="M70 665H1530" class="line"/>
-  <path d="M800 665V685" class="line"/>
-  <rect x="485" y="685" width="630" height="185" class="card" stroke="#087f8c"/>
-  <rect x="485" y="685" width="630" height="38" rx="8" fill="#e8f7f8"/>
-  <rect x="507" y="742" width="54" height="54" rx="10" fill="#087f8c"/><text x="534" y="775" text-anchor="middle" class="h white">WEB</text>
-  <text x="580" y="750" class="h teal">WEB01 • Ubuntu Web Security Target</text><text x="580" y="772" class="ip navy">10.10.10.70</text>
-  <text x="580" y="797" class="t">Nginx :80 → Docker loopback 127.0.0.1:3000 → OWASP Juice Shop</text>
-  <text x="580" y="820" class="t">Dedicated access/error logs • Wazuh Agent 4.14.2 • Splunk UF 10.0.1</text>
-  <text x="580" y="843" class="s">Juice Shop is reachable only from the isolated VMnet2 lab and VMware host.</text>
-  <rect x="930" y="742" width="155" height="28" class="badge" fill="#e8f7f8" stroke="#087f8c"/>
-  <text x="1007" y="761" text-anchor="middle" class="s bold teal">OWASP TARGET</text>
-
-  <!-- Web test and telemetry paths -->
-  <path d="M745 299V365H800V685" class="dash"/>
-  <text x="815" y="650" class="s bold purple">Burp Proxy / Repeater HTTP requests</text>
-  <path d="M690 685V655H745V640" class="dash"/>
-  <path d="M910 685V655H1380V640" class="dash"/>
-  <text x="1045" y="680" class="s bold purple">Nginx logs → Wazuh + Splunk</text>
-
-  <!-- Web detection workflow -->
-  <rect x="25" y="900" width="1550" height="115" class="section" stroke="#c51d65" stroke-dasharray="5 3"/>
-  <text x="45" y="927" class="h pink">OWASP Web Security Validation and SOC Detection Workflow</text>
-  <g transform="translate(45 948)"><rect width="220" height="47" rx="6" fill="#f3eaff" stroke="#7c3cc4"/><text x="110" y="19" text-anchor="middle" class="t bold">Manual web test</text><text x="110" y="36" text-anchor="middle" class="s">Burp Proxy + Repeater</text></g>
-  <g transform="translate(315 948)"><rect width="220" height="47" rx="6" fill="#e8f7f8" stroke="#087f8c"/><text x="110" y="19" text-anchor="middle" class="t bold">Application activity</text><text x="110" y="36" text-anchor="middle" class="s">Nginx → Juice Shop</text></g>
-  <g transform="translate(585 948)"><rect width="220" height="47" rx="6" fill="#fff7e5" stroke="#d68a00"/><text x="110" y="19" text-anchor="middle" class="t bold">Web telemetry</text><text x="110" y="36" text-anchor="middle" class="s">Source IP • URL • status</text></g>
-  <g transform="translate(855 948)"><rect width="220" height="47" rx="6" fill="#ecf9f0" stroke="#168444"/><text x="110" y="19" text-anchor="middle" class="t bold">SIEM detection</text><text x="110" y="36" text-anchor="middle" class="s">Wazuh rule + Splunk SPL</text></g>
-  <g transform="translate(1125 948)"><rect width="220" height="47" rx="6" fill="#fff0f6" stroke="#c51d65"/><text x="110" y="19" text-anchor="middle" class="t bold">SOC notification</text><text x="110" y="36" text-anchor="middle" class="s">Triggered alert + email</text></g>
-  <path d="M265 971H315M535 971H585M805 971H855M1075 971H1125" class="arrow"/>
-
-  <!-- Validation summaries -->
-  <rect x="25" y="1040" width="745" height="145" class="section" stroke="#1559bd"/>
-  <text x="45" y="1068" class="h blue">NIST CSF 2.0 + MITRE ATT&amp;CK Validation</text>
-  <text x="45" y="1093" class="t">T1110.001 • T1046 • T1059.001 • T1543.003 • T1053.005</text>
-  <text x="45" y="1116" class="t">T1547.001 • T1562.001 • T1070.004 • T1087.002 • T1021.002</text>
-  <text x="45" y="1142" class="s">Controlled execution → host/network telemetry → correlation → alert → recovery</text>
-  <rect x="45" y="1155" width="245" height="20" class="badge" fill="#edf4ff"/><text x="167" y="1169" text-anchor="middle" class="s bold blue">10 REPEATABLE EXERCISES</text>
-
-  <rect x="795" y="1040" width="780" height="145" class="section" stroke="#087f8c"/>
-  <text x="815" y="1068" class="h teal">OWASP Juice Shop + Burp Suite Validation</text>
-  <text x="815" y="1093" class="t">A01 Access Control • A02 Misconfiguration • A07 Authentication Failures</text>
-  <text x="815" y="1116" class="t">Exposed resources • Five HTTP 401s • No rate limit or account lockout</text>
-  <text x="815" y="1142" class="s">Burp • Nginx • Wazuh 119971/119973 • Splunk alert • SMTP email</text>
-  <rect x="815" y="1155" width="270" height="20" class="badge" fill="#e8f7f8"/><text x="950" y="1169" text-anchor="middle" class="s bold teal">END-TO-END WEB DETECTION</text>
-
-  <rect x="25" y="1210" width="1550" height="30" rx="6" fill="#f7f9fc" stroke="#a7b3c5"/>
-  <text x="40" y="1230" class="s"><tspan class="bold">Status:</tspan> Operational • Isolated and authorized testing only • No WAN exposure</text>
-  <text x="1560" y="1230" text-anchor="end" class="s">Updated 16 November 2026</text>
+<path d="M202 610V700H1596V610M550 610V700M900 610V700" fill="none" stroke="#7557b4" stroke-width="2.5" stroke-dasharray="8 6"/>
+<rect x="87" y="651" width="960" height="36" fill="#eef4fa"/>
+<text x="95" y="675" class="b" >Logical telemetry: endpoint events, Linux logs and dedicated WEB01 Nginx access/error logs</text>
+<path d="M620 700V752" class="tel"/>
+<path d="M1180 700V752" class="tel"/>
+<rect x="390" y="752" width="460" height="180" rx="12" fill="#fff" stroke="#b65536" stroke-width="1.6"/>
+<rect x="390" y="752" width="460" height="7" rx="3" fill="#b65536"/>
+<text x="408" y="788" class="h" >Wazuh</text>
+<text x="408" y="816" class="b" >10.10.10.30</text>
+<text x="408" y="850" class="s" >Manager, indexer and dashboard</text>
+<text x="408" y="874" class="s" >Endpoint / web alerts and threat hunting</text>
+<text x="408" y="898" class="s" >A05 single-quote SQL-injection alert observed</text>
+<rect x="950" y="752" width="460" height="180" rx="12" fill="#fff" stroke="#218356" stroke-width="1.6"/>
+<rect x="950" y="752" width="460" height="7" rx="3" fill="#218356"/>
+<text x="968" y="788" class="h" >Splunk Enterprise</text>
+<text x="968" y="816" class="b" >10.10.10.60</text>
+<text x="968" y="850" class="s" >Central search, correlation and dashboards</text>
+<text x="968" y="874" class="s" >WEB01 Nginx sources → web index</text>
+<text x="968" y="898" class="s" >Scheduled alerts and SMTP email actions</text>
+<rect x="24" y="994" width="1752" height="180" rx="12" fill="#fff" stroke="#087d87" stroke-width="1.6"/>
+<text x="44" y="1027" class="h" >WEB01 application path and A05 validation</text>
+<rect x="44" y="1048" width="360" height="102" rx="12" fill="#fff" stroke="#7557b4" stroke-width="1.6"/>
+<rect x="44" y="1048" width="360" height="7" rx="3" fill="#7557b4"/>
+<text x="62" y="1084" class="h" >Kali / Burp</text>
+<text x="62" y="1112" class="b" >10.10.10.40</text>
+<rect x="462" y="1048" width="380" height="102" rx="12" fill="#fff" stroke="#087d87" stroke-width="1.6"/>
+<rect x="462" y="1048" width="380" height="7" rx="3" fill="#087d87"/>
+<text x="480" y="1084" class="h" >Nginx on WEB01</text>
+<text x="480" y="1112" class="b" >10.10.10.70:80</text>
+<rect x="900" y="1048" width="400" height="102" rx="12" fill="#fff" stroke="#087d87" stroke-width="1.6"/>
+<rect x="900" y="1048" width="400" height="7" rx="3" fill="#087d87"/>
+<text x="918" y="1084" class="h" >Docker / Juice Shop</text>
+<text x="918" y="1112" class="b" >WEB01 loopback 127.0.0.1:3000</text>
+<path d="M404 1100H462" class="net"/>
+<path d="M842 1100H900" class="net"/>
+<text x="1330" y="1079" class="b" >GET /rest/products/search</text>
+<text x="1330" y="1107" class="s" >Normal search, quote, Boolean pair</text>
+<text x="1330" y="1133" class="s" >Record response bodies separately</text>
+<rect x="24" y="1198" width="850" height="190" rx="12" fill="#fff" stroke="#afc6db" stroke-width="1.6"/>
+<text x="44" y="1232" class="h" >NIST CSF 2.0 and MITRE ATT&amp;CK</text>
+<text x="44" y="1263" class="s" >10 documented exercises across execution, persistence, discovery and defense impairment</text>
+<text x="44" y="1294" class="b" >T1110.001 • T1046 • T1059.001 • T1543.003 • T1053.005</text>
+<text x="44" y="1323" class="b" >T1547.001 • T1562.001 • T1070.004 • T1087.002 • T1021.002</text>
+<text x="44" y="1362" class="s" >Controlled tests → telemetry → correlation → alerting → recovery</text>
+<rect x="898" y="1198" width="878" height="190" rx="12" fill="#fff" stroke="#087d87" stroke-width="1.6"/>
+<text x="918" y="1232" class="h" >OWASP Top 10 2025 web activities</text>
+<text x="918" y="1263" class="b" >A01 / A02: exposed resources | A07: authentication failures</text>
+<text x="918" y="1294" class="b" >A05: product-search injection testing and detection review in progress</text>
+<text x="918" y="1323" class="s" >Observed: Wazuh SQL-injection description for an encoded quote (%27)</text>
+<text x="918" y="1362" class="s" >Pending evidence: Boolean outcomes, A05 Splunk alert/email and recovery</text>
+<path d="M44 1427H96" class="net"/>
+<text x="108" y="1432" class="s" >Network / application connection</text>
+<path d="M475 1427H527" class="tel"/>
+<text x="539" y="1432" class="s" >Logical telemetry flow; not an inline WAF</text>
+<text x="44" y="1477" class="s" >Isolated, owner-authorized homelab testing | Diagram updated 17 November 2026</text>
+<text x="1756" y="1477" class="s" text-anchor="end">A05 detection ≠ confirmed exploitation</text>
 </svg>

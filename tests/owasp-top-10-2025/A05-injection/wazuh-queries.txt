@@ -1,0 +1,13 @@
+# Dashboard queries; use the relevant test time window and clear unrelated filters.
+# Confirmed working filter from the exercise:
+agent.name: "WEB01-10.10.10.70" AND location: "/var/log/nginx/juice-shop-access.log"
+
+# Agent-only fallback:
+agent.name: "WEB01-10.10.10.70"
+
+# Inspect full_log and data.url (if present) on matching events.
+# A %27 substring is not sufficient to identify which test produced the event.
+# Record the complete URI, rule.id, rule.level, rule.description, timestamp,
+# agent.name, and location for Screenshot 10.
+# Existing SQL-injection description observed by the user; rule ID not yet recorded.
+# No custom A05 rule was authored or deployed in this activity.
