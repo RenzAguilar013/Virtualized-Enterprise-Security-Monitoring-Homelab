@@ -51,17 +51,17 @@ Virtualized-Enterprise-Security-Monitoring-Homelab/
                 wazuh-queries.txt
                 screenshots/
                     README.md
+                    12 evidence screenshots
             A07-authentication-failures/
                 existing report, queries, rules and screenshots
 ```
 
-## A05 evidence filenames
+## A05 uploaded evidence
 
-Add the following sanitized original images inside
-`tests/owasp-top-10-2025/A05-injection/screenshots/` as evidence is available:
+The A05 screenshot directory contains the following reviewed PNGs:
 
-- `01-baseline.png`
-- `02-burp-normal-search.png`
+- `01-a05-web01-search-baseline.png`
+- `02-a05-burp-normal-search.png`
 - `03-burp-single-quote-response.png`
 - `04-burp-boolean-true.png`
 - `05-burp-boolean-false.png`
@@ -71,15 +71,15 @@ Add the following sanitized original images inside
 - `09-email-notification.png`
 - `10-wazuh-sql-injection-alert.png`
 - `11-recovery-validation.png`
+- `11-wazuh-logtest-before-custom-rule.png`
 
-These PNGs are intended additions, not files supplied in this update. The
-[screenshot manifest](../tests/owasp-top-10-2025/A05-injection/screenshots/README.md)
-explains each capture. No `wazuh-rules.xml` is added because a custom A05 rule
-was not implemented. The observed existing Wazuh alert belongs in the report.
+See the [screenshot manifest](../tests/owasp-top-10-2025/A05-injection/screenshots/README.md) for results and
+redaction requirements for screenshots 03, 04, and 06.
 
-## Completion criteria
+## A05 completion
 
-Record exact Boolean response outcomes, Wazuh rule ID and level, Splunk alert
-and email outcomes, and recovery results before marking the full A05 workflow
-complete. A screenshot filename or a supplied procedure does not establish that
-the corresponding validation passed.
+The controlled Boolean response comparison, Nginx/Splunk timeline, scheduled
+alert, email delivery, Wazuh single-quote detection and application recovery
+are documented. The report records the Boolean Wazuh coverage gap and limits
+of the post-test service-health capture. No custom Wazuh rule or application
+remediation is claimed.

@@ -1,16 +1,19 @@
 # OWASP A05 Product Search SQL Injection Validation
 
-Exercise 3 uses controlled SQL-injection requests against the owner-operated
-Juice Shop product-search API. The objective is to compare application responses
-and investigate the resulting Nginx, Splunk, and Wazuh telemetry.
+**Status: Completed — test and detection evidence reviewed.**
 
-Activity date: 17 November 2026 (Asia/Manila).
+Activity date: 17 November 2026 (Asia/Manila). The controlled product-search
+tests demonstrated Boolean SQL injection. This exercise also validated Nginx
+and Splunk visibility, a scheduled Splunk alert and delivered email, and Wazuh
+detection of the single-quote probe. Detection coverage limitations are recorded
+below. Publication cleanup remains: redact authorization/cookie values in
+screenshots 03, 04, and 06 before presenting those copies as sanitized evidence.
 
 ## Scope and environment
 
 | Component | Address or setting |
 |---|---|
-| Authorized test source | Kali, `10.10.10.40`, Burp Suite Community Edition |
+| Test source | Kali, `10.10.10.40`, Burp Suite Community Edition |
 | Target | WEB01, `http://10.10.10.70` |
 | Endpoint | `GET /rest/products/search?q=...` |
 | Application path | Nginx port 80 to Docker loopback `127.0.0.1:3000` |
@@ -19,112 +22,99 @@ Activity date: 17 November 2026 (Asia/Manila).
 | Splunk | `10.10.10.60`, index `web` |
 | Access log | `/var/log/nginx/juice-shop-access.log` |
 
-Only the isolated homelab target is in scope. Tests use bounded, read-only
-requests; no user-table extraction, destructive statements, or data modification
-is required.
+Tests were limited to the owner-operated homelab. No database modification
+or user-table extraction was needed.
 
-## Evidence and current status
+## Observed results
 
-| Item | Recorded status |
-|---|---|
-| Baseline and normal-search screenshots | Capture reported; sanitized originals not supplied for this update |
-| Single-quote probe | Procedure supplied; exact request/response evidence awaits attachment |
-| Wazuh alert | User reports a SQL-injection description and `%27` in the WEB01 Nginx event |
-| Wazuh rule ID and level | Not yet recorded |
-| Boolean true/false application results | Not yet confirmed |
-| Boolean payload visibility in Wazuh | User could not locate `1%3D1` or `1%3D0`; cause not established |
-| A05 Splunk timeline, scheduled alert, and email | Procedures supplied; outcomes not yet confirmed |
-| Recovery checks | Procedure supplied; outcomes not yet confirmed |
+| Test or validation | Observed result | Evidence |
+|---|---|---|
+| Infrastructure baseline | Juice Shop running, port 3000 bound to 127.0.0.1; Docker, Nginx and Wazuh agent active | 01 |
+| Splunk forwarder baseline | systemd reported inactive, but the separate Splunk status command showed splunkd and helpers running | 01 |
+| Normal search | `orange` returned HTTP 200 and Orange Juice product data | 02 |
+| Single quote | `q=%27` returned HTTP 200 with `"data":[]`; no SQL error shown | 03 |
+| Boolean true | `apple%')) AND 1=1-- ` returned HTTP 200 and product data at 08:06:51 UTC | 04 |
+| Boolean false | `apple%')) AND 1=0-- ` returned HTTP 200 and `"data":[]` at 08:08:02 UTC | 05 |
+| Nginx visibility | Access entries contain both Boolean conditions from 10.10.10.40 with status 200 | 06 |
+| Splunk investigation | Decoded true/false requests, source IP, host and statuses visible in timeline | 07 |
+| Scheduled alert | A05 alert entries visible at 08:19 and 08:20 UTC | 08 |
+| Email delivery | Received A05 email includes WEB01, 10.10.10.40, both Boolean conditions and HTTP 200 | 09 |
+| Wazuh quote detection | Rule 31164, level 6, description "SQL injection attempt.", URL containing `q=%27` | 10 |
+| Post-test recovery | Normal `apple` search returned HTTP 200 and product data; Nginx configuration test succeeded | 11 |
+| Boolean rule diagnostic | web-accesslog decoder extracted the encoded Boolean URL; rule 31100, level 0, "Access log messages grouped." | Additional logtest image |
 
-This activity remains in progress. A detected single-quote request is evidence
-of alerting on that probe. HTTP 200, a SQL-error response, or a SIEM rule match
-alone does not establish successful SQL injection. No custom A05 Wazuh rule or
-implemented application fix is claimed.
+The true/false response difference demonstrates control of SQL query behavior
+in this test. No exact product count is claimed because the full true-condition
+array is not visible in the capture. An HTTP status or SIEM alert by itself
+would not establish this finding.
 
-## Method
+## Test method and request evidence
 
-1. Verify WEB01 services and capture a normal product-search baseline in Burp.
-2. Send the encoded single-quote search request once and record its actual
-   status and body; do not assume that an error must occur.
-3. Send the Boolean true/false pair from [the test cases](burp-test-cases.md).
-   Record both response bodies and product counts. Confirm the query structure
-   matches the deployed Juice Shop version before interpreting results.
-4. Locate each request in the dedicated Nginx access log and record source,
-   timestamp/timezone, URI, and status.
-5. Run the searches in [splunk-searches.spl](splunk-searches.spl). Confirm field
-   extraction against actual logs before saving the scheduled alert.
-6. Use [wazuh-queries.txt](wazuh-queries.txt) to locate WEB01 Nginx alerts. Record
-   the existing rule ID, level, description, and complete request.
-7. Validate alert/email behavior and recovery separately. Update the status
-   table only after the corresponding evidence is available.
+Use [burp-test-cases.md](burp-test-cases.md) for exact encoded request lines.
+The baseline screenshot uses `orange`; the Boolean pair and recovery search
+use `apple`.
 
-## Wazuh observation and investigation
+1. Record the container, services and normal product-search response.
+2. Send the encoded single quote and record the actual status and body.
+3. Send the matching Boolean true and false conditions in Burp Repeater.
+4. Compare the response bodies and correlate requests with Nginx and Splunk.
+5. Validate the scheduled alert, email delivery and Wazuh detection.
+6. Restore a normal search and check Nginx configuration.
 
-The successful dashboard filter was:
+## Wazuh detection and coverage gap
+
+The working filter was:
 
 ```text
 agent.name: "WEB01-10.10.10.70" AND location: "/var/log/nginx/juice-shop-access.log"
 ```
 
-The user reported a SQL-injection rule description for an event containing
-`%27`. `%27` is a single quote. It does not identify the Boolean test by itself,
-because the Boolean payload also contains an encoded quote. Inspect the full
-request before attributing an event to a particular test.
+Screenshot 10 shows built-in rule `31164`, level `6`, detecting the
+single-quote probe. It does not show a Boolean-condition alert.
 
-Capture that alert as Screenshot 10. Do not state that the Boolean tests were
-detected unless their complete request URIs are present. Search-field behavior,
-encoding, time range, ingestion, and rule matching remain possible explanations
-for the missing Boolean events.
+The additional logtest screenshot uses a complete Boolean true-condition
+Nginx entry. Phase 2 decodes it using `web-accesslog`, including source
+`10.10.10.40`, HTTP status `200`, and the encoded URL. Phase 3 matches
+`31100`, level `0`, "Access log messages grouped." This explains the tested
+line's lack of a SQL-injection alert in that rule test; it does not independently
+verify live forwarding. No custom A05 Wazuh rule was implemented. Extending and
+retesting Boolean alert coverage is an optional follow-up improvement.
 
-If needed, copy a complete Boolean request line from the Nginx log on WEB01
-and paste it into `sudo /var/ossec/bin/wazuh-logtest` on the Wazuh manager.
-Record Phases 2 and 3 to inspect decoding and matching. Logtest is diagnostic;
-it does not verify live forwarding or generate the production dashboard event.
+## Splunk investigation and alerting
 
-## Splunk alert configuration
+[splunk-searches.spl](splunk-searches.spl) contains the investigation and
+exercise-specific detection searches. Screenshot 07 shows both conditions.
+Screenshot 08 establishes that the scheduled A05 alert fired. Screenshot 09
+separately establishes email receipt with the matching source and requests.
 
-Use search 2 from `splunk-searches.spl` after confirming it matches the actual
-test requests. Run every minute (`* * * * *`) over the last five minutes;
-trigger once when the result count is greater than zero. Use a five-minute
-suppression interval to limit duplicate notifications during the exercise.
+The intended schedule is every minute over five minutes, with suppression to
+limit duplicate notifications. The screenshots do not verify every saved
+schedule or suppression setting. This search detects the exercise strings;
+it is not a comprehensive SQL-injection detector.
 
-Keep Add to Triggered Alerts enabled. If testing email, use the established
-lab SMTP configuration and recipient. Replay one request after saving and
-verify both the triggered alert and email receipt. An alert firing does not
-establish email delivery. The search detects specific exercise strings and is
-not a comprehensive SQL-injection detector.
+## Recovery and limitations
 
-## Recovery validation
+Screenshot 11 shows a successful normal product search and successful
+`nginx -t`. It does not show usable output from all service-status and
+container-listing commands, so complete post-test service health and port binding
+are not claimed. The baseline separately shows the loopback binding and a running
+Splunk forwarder despite its inactive systemd unit.
 
-Repeat the normal `apple` search and record the HTTP status and body. On WEB01:
+No application fix or remediation retest was performed. Juice Shop remains
+an intentionally vulnerable training target.
 
-```bash
-sudo nginx -t
-sudo systemctl is-active nginx docker wazuh-agent SplunkForwarder
-sudo docker ps --filter name=juice-shop
-```
+## Remediation recommendations
 
-Verify that the container is running and port 3000 remains loopback-bound.
-Retain monitoring and security controls. No database cleanup should be required
-for these read-only requests. Record any unexpected effect before concluding
-that recovery passed.
+Use parameterized queries with bound values, least-privileged database access,
+and generic client-facing errors with useful server-side logs. Validate search
+types and lengths. Alerting does not replace query parameterization.
 
-## Remediation guidance
+## Uploaded evidence
 
-For a production application, use parameterized SQL queries with bound values,
-appropriate database privileges, and generic client-facing errors with useful
-server-side logging. Validate search length and type, and use allowlists for
-dynamic SQL identifiers where applicable. Escaping input or adding an alert
-does not replace parameterization. Juice Shop is intentionally vulnerable;
-these recommendations have not been implemented or retested in this activity.
-
-## Evidence layout
-
-See [the screenshot manifest](screenshots/README.md). It lists intended filenames
-and what each capture must establish. Image files are not present in this update.
-Upload sanitized original captures; preserve request and response details, and
-redact authorization headers, cookies, tokens, and personal email addresses.
-Do not publish AI-generated recreations as test evidence.
+See [the screenshot manifest](screenshots/README.md) for the actual filenames,
+reviewed results and publication cleanup. Twelve PNGs are present: screenshots
+01–11 plus a separate logtest capture that also uses prefix 11. Screenshot names
+alone were not used to establish completion; the displayed results were reviewed.
 
 ## References
 

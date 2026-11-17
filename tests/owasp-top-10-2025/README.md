@@ -10,7 +10,7 @@ This directory tracks authorized web application security exercises performed ag
 | A02:2025 Security Misconfiguration | Directory listing and exposed document access | Completed |
 | A03:2025 Software Supply Chain Failures | Container and dependency assessment | Planned |
 | A04:2025 Cryptographic Failures | Transport, token, and sensitive-data review | Planned |
-| A05:2025 Injection | Product-search SQL injection and SIEM detection review | In progress; single-quote Wazuh alert reported |
+| A05:2025 Injection | Product-search SQL injection and SIEM detection review | Completed; evidence reviewed, limitations documented |
 | A06:2025 Insecure Design | Business-logic and abuse-case analysis | Planned |
 | A07:2025 Authentication Failures | Login and rate-limit validation | Completed |
 | A08:2025 Software or Data Integrity Failures | Image and deployment integrity validation | Planned |
@@ -22,11 +22,10 @@ This directory tracks authorized web application security exercises performed ag
 - [A01/A02 Exposed Resources](A01-A02-exposed-resources/OWASP-A01-A02-Exposed-Resources-Validation.md)
 - [A07 Authentication Failures](A07-authentication-failures/OWASP-A07-Authentication-Failures-Validation.md)
 
-## Activity in progress
-
 - [A05 Product Search SQL Injection](A05-injection/OWASP-A05-SQL-Injection-Validation.md)
-  records the confirmed single-quote Wazuh alert separately from Boolean response,
-  Splunk alert/email, and recovery results awaiting evidence confirmation.
+  includes the Boolean response comparison, Nginx/Splunk records, triggered alert,
+  received email, Wazuh rule 31164, recovery evidence, and documented limitations.
+  Screenshots 03, 04, and 06 require token redaction.
 
 ## Shared configuration
 

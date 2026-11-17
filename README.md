@@ -114,21 +114,23 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | Exercise | OWASP mapping | Evidence |
 |---|---|---|
 | [Juice Shop exposed-resource detection](tests/owasp-top-10-2025/A01-A02-exposed-resources/OWASP-A01-A02-Exposed-Resources-Validation.md) | **A01:2025 Broken Access Control**, **A02:2025 Security Misconfiguration** | WEB01, Docker, Nginx, Burp Suite, exposed `/ftp/` resources, Wazuh custom rules, Splunk investigation, triggered alert and email notification |
-| [Product-search SQL injection](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md) | **A05:2025 Injection** | Controlled Burp test cases; user-reported Wazuh SQL-injection alert for `%27`; remaining evidence confirmation in progress |
+| [Product-search SQL injection](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md) | **A05:2025 Injection** | Completed: Boolean response comparison, Nginx/Splunk timeline, triggered alert and email, Wazuh rule `31164`, and recovery evidence |
 | [Authentication failure and rate-limit validation](tests/owasp-top-10-2025/A07-authentication-failures/OWASP-A07-Authentication-Failures-Validation.md) | **A07:2025 Authentication Failures** | Controlled HTTP `401` sequence, immediate post-failure `200`, Nginx, Wazuh rules `119972`/`119973`, Splunk threshold alert and SMTP notification |
 
 ### A05 product-search injection activity
 
-Exercise 3 extends the web lab with controlled SQL-injection tests against
-`GET /rest/products/search`. A Wazuh alert with a SQL-injection description was
-observed for the encoded single-quote request (`%27`) from WEB01's dedicated
-Nginx access log. The registered Wazuh agent name is `WEB01-10.10.10.70`.
+Exercise 3 validated Boolean SQL injection against `GET /rest/products/search`:
+the true condition returned products and the false condition returned an empty
+array, both with HTTP 200. Nginx and Splunk recorded the requests. The A05
+scheduled Splunk alert fired, and its email notification was received.
 
-The activity includes a normal-search baseline, a single-quote probe, a Boolean
-true/false test pair, Splunk investigation and alert queries, and recovery checks.
-The Boolean response comparison, A05 Splunk alert/email delivery, rule ID, and
-recovery outcomes remain pending evidence confirmation. Detection of a request
-does not establish successful exploitation or remediation.
+Wazuh rule `31164`, level `6`, flagged the encoded single-quote request as
+"SQL injection attempt." The Boolean logtest matched rule `31100`, level
+`0`; Boolean alert coverage is a documented detection gap. A normal search
+returned products after testing and `nginx -t` succeeded. The uploaded recovery
+capture does not establish every service's status or the post-test port binding.
+See the [A05 report](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md)
+for the reviewed evidence and limitations.
 
 ## Completed response workflows
 
@@ -312,7 +314,8 @@ does not establish successful exploitation or remediation.
         │   ├── splunk-searches.spl
         │   ├── wazuh-queries.txt
         │   └── screenshots/
-        │       └── README.md
+        │       ├── README.md
+        │       └── 12 evidence screenshots
         └── A07-authentication-failures/
             ├── OWASP-A07-Authentication-Failures-Validation.md
             ├── splunk-searches.spl
@@ -322,12 +325,14 @@ does not establish successful exploitation or remediation.
                 └── README.md
 ```
 
-The A05 screenshot manifest lists the intended evidence filenames. A05 image files
-are not included until sanitized originals are uploaded.
+The A05 screenshots are uploaded. The screenshot manifest records the reviewed
+results and identifies screenshots 03, 04, and 06 for token redaction.
 
 ## Evidence standards
 
-Only sanitized evidence is published. Passwords, application passwords, API tokens, private keys, cookies and other secrets are excluded. Exercise evidence is organized inside each test folder, with reusable queries stored as text files.
+Evidence must exclude passwords, application passwords, API tokens, private keys,
+cookies and other secrets. A05 screenshots 03, 04, and 06 still require sanitized
+replacements; this publication cleanup is recorded separately from lab completion. Exercise evidence is organized inside each test folder, with reusable queries stored as text files.
 
 ## Skills demonstrated
 

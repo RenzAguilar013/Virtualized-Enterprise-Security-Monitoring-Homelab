@@ -1,31 +1,24 @@
 # A05 Screenshot Manifest
 
-The filenames below define the final evidence layout. No A05 screenshots are
-included in this update. Baseline capture was reported, and a Wazuh SQL-injection
-alert was reported; other outcomes need confirmation from original evidence.
+The twelve PNGs below are uploaded and were reviewed. The lab activity is
+complete with the limitations documented in the [report](../OWASP-A05-SQL-Injection-Validation.md).
+Screenshots 03, 04, and 06 require replacement with copies that fully redact
+authorization/cookie values. Do not change the payloads, responses or log results.
 
-| Filename | Required evidence |
+| Filename | Reviewed evidence |
 |---|---|
-| `01-baseline.png` | WEB01 service or application baseline |
-| `02-burp-normal-search.png` | Normal search request and response |
-| `03-burp-single-quote-response.png` | Exact single-quote request and actual status/body |
-| `04-burp-boolean-true.png` | True-condition request and actual returned products |
-| `05-burp-boolean-false.png` | False-condition request and actual returned products |
-| `06-nginx-search-test-timeline.png` | Nginx entries with source, URI, timestamp and status |
-| `07-splunk-search-test-timeline.png` | Splunk timeline with decoded test URIs |
-| `08-splunk-triggered-alert.png` | A05 triggered alert and result |
-| `09-email-notification.png` | Received A05 alert email, if verified |
-| `10-wazuh-sql-injection-alert.png` | Wazuh alert for the observed %27 request, with rule and full log |
-| `11-recovery-validation.png` | Normal search and/or WEB01 service/container health |
+| `01-a05-web01-search-baseline.png` | Container/loopback baseline; service checks and separate running Splunk process status |
+| `02-a05-burp-normal-search.png` | Normal orange search: HTTP 200 and product data |
+| `03-burp-single-quote-response.png` | Single quote: HTTP 200, empty array; authorization token needs redaction |
+| `04-burp-boolean-true.png` | True condition: HTTP 200 and product data; authorization/cookie values need redaction |
+| `05-burp-boolean-false.png` | False condition: HTTP 200 and empty array |
+| `06-nginx-search-test-timeline.png` | Both Boolean requests in Nginx; Burp authorization token needs redaction |
+| `07-splunk-search-test-timeline.png` | Decoded requests, timestamps, source and HTTP statuses |
+| `08-splunk-triggered-alert.png` | Scheduled A05 alert fired |
+| `09-email-notification.png` | A05 email received with both conditions and source IP |
+| `10-wazuh-sql-injection-alert.png` | Quote probe detected by rule 31164, level 6 |
+| `11-recovery-validation.png` | Normal search works; nginx -t succeeds; other post-test service output not demonstrated |
+| `11-wazuh-logtest-before-custom-rule.png` | Boolean true logtest: decoder web-accesslog; rule 31100, level 0 |
 
-Screenshot 10 may document the single-quote alert; Boolean payload detection is
-not required for that capture. Include rule.id, rule.description, timestamp,
-agent.name, location, and the complete relevant request. Do not infer Boolean
-coverage from the presence of %27 alone.
-
-Screenshot 11 is recovery validation. A logtest screenshot is optional diagnostic
-evidence and can use `12-wazuh-logtest-diagnostic.png` if performed.
-
-Use sanitized original screenshots. Fully redact authorization and cookie values,
-tokens, passwords, and personal email addresses. Do not alter payloads, statuses,
-response bodies, or rule details. Do not use generated recreations as evidence.
+The two files prefixed 11 are distinct recovery and diagnostic captures.
+No custom A05 rule or implemented application fix is claimed.
