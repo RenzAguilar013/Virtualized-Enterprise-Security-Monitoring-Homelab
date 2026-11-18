@@ -1,6 +1,6 @@
 # OWASP Top 10:2025 Validation Program
 
-This directory tracks authorized web application security exercises performed against the owner-controlled OWASP Juice Shop instance on WEB01 (`10.10.10.70`). Each activity combines Burp Suite evidence with Nginx, Wazuh, and Splunk telemetry.
+This directory tracks authorized web application security exercises performed against the owner-controlled OWASP Juice Shop instance on WEB01 (`10.10.10.70`). Web-request exercises combine Burp Suite and Nginx evidence with Wazuh and Splunk telemetry. A03 adds Trivy inventory, dependency triage and scanner-finding collection in both SIEMs.
 
 ## Progress
 
@@ -8,7 +8,7 @@ This directory tracks authorized web application security exercises performed ag
 |---|---|---|
 | A01:2025 Broken Access Control | Unauthenticated access to exposed `/ftp/` resources | Completed |
 | A02:2025 Security Misconfiguration | Directory listing and exposed document access | Completed |
-| A03:2025 Software Supply Chain Failures | Container and dependency assessment | Planned |
+| A03:2025 Software Supply Chain Failures | Container/SBOM assessment, advisory triage and dual-SIEM scanner-finding alerts | Assessment and alert workflow completed (operator-confirmed); final recovery result/evidence pending |
 | A04:2025 Cryptographic Failures | Transport, token, and sensitive-data review | Planned |
 | A05:2025 Injection | Product-search SQL injection and SIEM detection review | Completed; evidence reviewed, limitations documented |
 | A06:2025 Insecure Design | Business-logic and abuse-case analysis | Planned |
@@ -26,6 +26,14 @@ This directory tracks authorized web application security exercises performed ag
   includes the Boolean response comparison, Nginx/Splunk records, triggered alert,
   received email, Wazuh rule 31164, recovery evidence, and documented limitations.
   Screenshots 03, 04, and 06 require token redaction.
+
+## A03 assessment and SIEM workflow
+
+- [A03 Container and Dependency Assessment](A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md)
+  records the 592-component SBOM, 119 package findings / 93 advisory IDs,
+  applicability checks, custom Wazuh rules, Splunk ingestion troubleshooting,
+  and operator-confirmed live alert/email captures. Final recovery outcomes and
+  the remaining original evidence uploads are tracked in its manifest.
 
 ## Shared configuration
 

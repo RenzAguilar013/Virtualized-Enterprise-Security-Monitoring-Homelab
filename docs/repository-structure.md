@@ -1,7 +1,7 @@
 # Repository Structure
 
-The following is the final documentation layout for the existing homelab plus
-Exercise 3. Existing exercises and evidence stay in their original folders.
+The following is the current documentation layout for the homelab, including
+A03 supply-chain assessment and the existing web exercises. Existing exercises and evidence stay in their original folders.
 Screenshot collections are collapsed for readability.
 
 ```text
@@ -44,6 +44,30 @@ Virtualized-Enterprise-Security-Monitoring-Homelab/
                 wazuh-agent-localfile.xml
             A01-A02-exposed-resources/
                 existing report, queries, rules and screenshots
+            A03-software-supply-chain/
+                OWASP-A03-Software-Supply-Chain-Validation.md
+                splunk-searches.spl
+                wazuh-rules.xml
+                wazuh-queries.txt
+                config/
+                    README.md
+                    splunk-inputs.conf
+                    splunk-props.conf
+                    splunk-default.meta
+                    wazuh-localfile.xml
+                scripts/
+                    README.md
+                    trivy_common.py
+                    export-trivy-findings.py
+                    run-alert-test.py
+                reports/
+                    README.md
+                    original exports to upload from WEB01
+                screenshots/
+                    README.md
+                    published source captures
+                    final captures to upload
+                    troubleshooting/
             A05-injection/
                 OWASP-A05-SQL-Injection-Validation.md
                 burp-test-cases.md
@@ -83,3 +107,22 @@ alert, email delivery, Wazuh single-quote detection and application recovery
 are documented. The report records the Boolean Wazuh coverage gap and limits
 of the post-test service-health capture. No custom Wazuh rule or application
 remediation is claimed.
+
+## A03 evidence and completion
+
+The [A03 report](../tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md)
+records assessment and alert workflow completion per operator confirmation.
+The public A03 update contains the summary and manifests. Thirteen source captures,
+implementation configuration and scripts are prepared separately for review. Final summary, live dashboard,
+triggered-alert/email images and original report exports still need uploading.
+Final post-test recovery results have not been supplied.
+
+Use the [A03 screenshot manifest](../tests/owasp-top-10-2025/A03-software-supply-chain/screenshots/README.md)
+for exact filenames 01–21, including 16a/16b, optional 18b and final recovery
+21a/21b. The reports inventory lists expected exports without fabricating them.
+
+## A03 public update scope
+
+The A03 file tree above is the target layout. The summary and directory README
+files are published; detailed configuration, scripts, raw exports and screenshots
+are not included in this public summary update. Existing exercises remain in place.

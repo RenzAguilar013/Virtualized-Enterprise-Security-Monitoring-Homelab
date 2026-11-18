@@ -1,6 +1,6 @@
 # Virtualized Enterprise Security and Monitoring Homelab
 
-A multi-host enterprise security homelab built with VMware Workstation, FortiGate, Active Directory, Wazuh, Splunk Enterprise, Kali Linux, Nessus, Sysmon, auditd, Atomic Red Team, Sigma, Docker, Nginx, OWASP Juice Shop and Burp Suite Community Edition.
+A multi-host enterprise security homelab built with VMware Workstation, FortiGate, Active Directory, Wazuh, Splunk Enterprise, Kali Linux, Nessus, Sysmon, auditd, Atomic Red Team, Sigma, Docker, Nginx, OWASP Juice Shop, Burp Suite Community Edition and Trivy.
 
 The environment simulates SOC monitoring, centralized telemetry, firewall administration, identity security, vulnerability assessment, detection engineering, alerting, incident investigation, containment, recovery and repeatable NIST CSF 2.0 and MITRE ATT&CK validation.
 
@@ -17,7 +17,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra and validation tooling |
 | Linux01 | `10.10.10.50` | Ubuntu telemetry host, auditd, FortiGate syslog receiver, Wazuh agent, Splunk Universal Forwarder and controlled agent-health validation |
 | Splunk Enterprise | `10.10.10.60` | Central search, dashboards, scheduled alerts and SMTP email actions |
-| WEB01 | `10.10.10.70` | Ubuntu web-security target with Nginx, Docker, OWASP Juice Shop, Wazuh Agent and Splunk Universal Forwarder |
+| WEB01 | `10.10.10.70` | Ubuntu web-security target with Nginx, Docker, OWASP Juice Shop, Wazuh Agent, Splunk Universal Forwarder and Trivy image/dependency assessment |
 
 ### Network design
 
@@ -49,6 +49,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Splunk Universal Forwarders and Wazuh agents on Windows and Linux endpoints
 - Splunk dashboards, Wazuh threat hunting, scheduled alerts and SMTP notifications
 - Dedicated WEB01 Nginx access/error telemetry forwarded to Wazuh and the Splunk `web` index
+- Trivy findings normalized to JSON Lines, collected by Wazuh and Splunk with scan identifiers
 
 ### Detection and investigation
 
@@ -71,6 +72,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Web authentication-failure monitoring, five-event threshold correlation and post-failure successful-login analysis
 - Controlled SQL-injection testing of the Juice Shop product-search API with Burp Repeater
 - Wazuh SQL-injection alert observed for a single-quote product-search request
+- Trivy container/dependency assessment, CycloneDX SBOM generation and advisory applicability review
+- Custom Wazuh Critical/High scanner-finding rules and Splunk alert/email validation
 - Source IP, destination IP, user, host, port, URI, HTTP status and timeline correlation
 
 ## Detection engineering and validation
@@ -91,6 +94,9 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Authored Wazuh web rules and a Splunk scheduled alert for `/ftp` directory or document access
 - Validated OWASP 2025 A07 by replaying a bounded five-request HTTP `401` sequence and confirming the absence of rate limiting or temporary lockout
 - Correlated repeated Juice Shop authentication failures with Wazuh rules `119972`/`119973` and a high-severity Splunk alert
+- Assessed 592 detected components; recorded 119 package findings across 93 advisory IDs
+- Investigated runtime package paths, PBKDF2 defaults, nested lodash function availability and JWT configuration
+- Corrected Splunk event splitting and removed redundant JSON extraction from the final queries
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -109,13 +115,36 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [Domain Account Discovery](tests/T1087-002-domain-account-discovery/NIST-MITRE-Domain-Account-Discovery.md) | `T1087.002` | Native and PowerShell/ADSI account discovery, Sysmon Event 1, PowerShell Event 4104, Wazuh, Splunk dashboard, alert, email and recovery |
 | [SMB/Windows Admin Shares](tests/T1021-002-smb-windows-admin-shares/NIST-MITRE-SMB-Windows-Admin-Shares.md) | `T1021.002` | Controlled IPC$ connection, Events 4624/5140/5145, Sysmon Event 3, source/destination correlation, Wazuh, Splunk dashboard, alert, email and cleanup |
 
-## OWASP web application security exercises
+## OWASP application and software supply chain exercises
 
 | Exercise | OWASP mapping | Evidence |
 |---|---|---|
 | [Juice Shop exposed-resource detection](tests/owasp-top-10-2025/A01-A02-exposed-resources/OWASP-A01-A02-Exposed-Resources-Validation.md) | **A01:2025 Broken Access Control**, **A02:2025 Security Misconfiguration** | WEB01, Docker, Nginx, Burp Suite, exposed `/ftp/` resources, Wazuh custom rules, Splunk investigation, triggered alert and email notification |
+| [Container and dependency assessment](tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md) | **A03:2025 Software Supply Chain Failures** | Trivy 0.76.2, CycloneDX SBOM, 592 components, 119 package findings / 93 advisories, applicability triage, custom Wazuh severity rules, Splunk ingestion and user-confirmed alert/email workflow |
 | [Product-search SQL injection](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md) | **A05:2025 Injection** | Completed: Boolean response comparison, Nginx/Splunk timeline, triggered alert and email, Wazuh rule `31164`, and recovery evidence |
 | [Authentication failure and rate-limit validation](tests/owasp-top-10-2025/A07-authentication-failures/OWASP-A07-Authentication-Failures-Validation.md) | **A07:2025 Authentication Failures** | Controlled HTTP `401` sequence, immediate post-failure `200`, Nginx, Wazuh rules `119972`/`119973`, Splunk threshold alert and SMTP notification |
+
+### A03 container and dependency assessment
+
+Trivy generated a CycloneDX 1.7 SBOM containing 592 detected components from
+WEB01's deployed Juice Shop image. The baseline scan reported 119 package
+findings across 93 advisory IDs: 7 Critical, 23 High, 69 Medium, 15 Low and
+5 Unknown. Selected findings were checked against package metadata and source;
+scanner matches were distinguished from demonstrated application exposure.
+
+JSON findings were collected by Wazuh and Splunk. Wazuh Critical/High rules
+passed logtest, and the operator confirmed live Wazuh alerts, the corrected
+Splunk summary, and triggered-alert/email screenshot completion. A reusable
+WEB01 test runs a fresh scan and forwards one actual priority finding with a
+new test-run ID. The pre-integration health check was reviewed; the final
+post-test recovery result remains to be attached and recorded.
+
+See the [A03 report](tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md)
+and [evidence manifest](tests/owasp-top-10-2025/A03-software-supply-chain/screenshots/README.md)
+for evidence status. This public update contains the project summary and evidence
+manifest. Supporting configuration, scripts and source captures are prepared
+separately; original scan exports and final recovery results still need to be
+supplied. No dependency patching or exploitation of dependency advisories is claimed.
 
 ### A05 product-search injection activity
 
@@ -133,6 +162,16 @@ See the [A05 report](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injecti
 for the reviewed evidence and limitations.
 
 ## Completed response workflows
+
+### A03 scanner-finding alert validation
+
+1. Inventoried the running Juice Shop image and generated a CycloneDX SBOM.
+2. Scanned known vulnerabilities and reviewed selected packages and advisory prerequisites.
+3. Normalized findings as JSON Lines and onboarded them to Wazuh and Splunk.
+4. Tested Critical/High Wazuh rules and corrected Splunk parsing and search aggregation.
+5. Generated a fresh WEB01 scan and forwarded one priority finding as a labeled validation sample.
+6. Operator confirmed live alert and email screenshot completion; final recovery evidence is tracked separately.
+
 
 ### SSH password guessing
 
@@ -248,7 +287,7 @@ for the reviewed evidence and limitations.
 ## Documentation
 
 - [Architecture](docs/architecture.md)
-- [Repository structure and A05 evidence layout](docs/repository-structure.md)
+- [Repository structure and evidence layout](docs/repository-structure.md)
 - [VMware network](docs/vmware-network.md)
 - [FortiGate configuration](docs/fortigate-configuration.md)
 - [Firewall policies](docs/firewall-policies.md)
@@ -308,6 +347,12 @@ for the reviewed evidence and limitations.
         │   └── screenshots/
         │       ├── README.md
         │       └── 41 evidence screenshots
+        ├── A03-software-supply-chain/
+        │   ├── OWASP-A03-Software-Supply-Chain-Validation.md
+        │   ├── config/
+        │   ├── scripts/
+        │   ├── reports/
+        │   └── screenshots/
         ├── A05-injection/
         │   ├── OWASP-A05-SQL-Injection-Validation.md
         │   ├── burp-test-cases.md
@@ -324,6 +369,9 @@ for the reviewed evidence and limitations.
             └── screenshots/
                 └── README.md
 ```
+
+The A03 configuration, script and report folders currently contain status manifests;
+the detailed implementation and evidence package is prepared separately.
 
 The A05 screenshots are uploaded. The screenshot manifest records the reviewed
 results and identifies screenshots 03, 04, and 06 for token redaction.
@@ -357,6 +405,7 @@ replacements; this publication cleanup is recorded separately from lab completio
 - Nginx access-log onboarding, HTTP field extraction and exposed-resource detection
 - Authentication-control testing, rate-limit and lockout validation
 - Controlled SQL-injection testing and investigation of Wazuh web alerts
+- Container dependency assessment, SBOM analysis, advisory triage and scanner-finding SIEM integration
 - Wazuh custom web rules and Splunk web-security alert engineering
 - Incident containment, recovery and technical documentation
 

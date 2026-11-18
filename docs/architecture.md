@@ -1,37 +1,27 @@
 # Lab Architecture
 
-## Network topology
-
 ![Enterprise security homelab topology](../assets/topology.png)
 
 [Editable SVG topology](../assets/topology.svg)
 
-VMware Workstation provides VMnet8 NAT (`192.168.100.0/24`) and the VMnet2
-host-only security LAN (`10.10.10.0/24`). FortiGate connects these networks
-using WAN `192.168.100.10` and LAN `10.10.10.1`; it provides firewalling,
-routing, NAT, and DHCP. Internal DNS is DC01 at `10.10.10.10`.
+The existing VMware, FortiGate, Active Directory, endpoint and SIEM topology
+retains its previously published hosts and addressing.
 
-## Web application and monitoring paths
+## Application and monitoring
 
-Kali (`10.10.10.40`) sends authorized Burp Proxy and Repeater requests to
-WEB01 Nginx at `10.10.10.70:80`. Nginx proxies to Juice Shop bound to
-`127.0.0.1:3000` on WEB01. No WAN port-forward exposes the web target.
-Kali and WEB01 share the lab subnet; their direct traffic does not require
-FortiGate routing.
+WEB01 hosts the Nginx-fronted, Dockerized OWASP Juice Shop training application.
+Kali supplies controlled web-test traffic. Wazuh agents and Splunk forwarders
+provide endpoint and web telemetry.
 
-WEB01's Wazuh agent and Splunk Universal Forwarder collect the dedicated
-Nginx access/error logs. Wazuh is at `10.10.10.30`; Splunk Enterprise is at
-`10.10.10.60`, with web telemetry in the `web` index. The Wazuh agent is
-registered as `WEB01-10.10.10.70`.
+## A03 assessment flow
 
-The A05 activity adds SQL-injection request testing and detection review;
-it does not add a network segment or an inline WAF. A Wazuh SQL-injection
-alert was reported for a `%27` search request. The Boolean payloads' alert
-coverage and application response comparison require separate evidence.
+Trivy runs locally on WEB01 to generate a CycloneDX SBOM and assess known
+component vulnerabilities. Findings are normalized as JSON Lines for custom
+Wazuh detection and Splunk investigation, scheduled alerting and email.
 
-## VMware virtual machines
+A controlled fresh assessment forwards a labeled priority sample to validate
+the notification workflow. Scanner severity is distinct from demonstrated
+application exploitability. No additional VM or inline security device was added.
 
-![VMware lab virtual machines](../screenshots/vmware/vmware-lab-vms.png)
-
-The lab contains FortiGate, DC01, the Renz Windows 11 endpoint, Wazuh,
-Kali, Linux01, Splunk Enterprise, and WEB01.
+See the [A03 summary](../tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md)
+for results and evidence status.
