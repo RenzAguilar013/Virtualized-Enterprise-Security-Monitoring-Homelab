@@ -1,0 +1,64 @@
+/* Run each search block independently. KV_MODE=json is configured; omit spath. */
+
+/* 1. Baseline recovery batch: excludes the original merged event and canary file. */
+index=web sourcetype="trivy:findings" earliest=-24h latest=now
+source="/var/log/trivy/splunk-recovery/findings.jsonl"
+| search integration="trivy" event_type="vulnerability_finding"
+| stats count AS finding_events dc(vulnerability_id) AS unique_advisories
+    count(eval(severity="CRITICAL")) AS critical
+    count(eval(severity="HIGH")) AS high
+    count(eval(severity="MEDIUM")) AS medium
+    count(eval(severity="LOW")) AS low
+    count(eval(severity="UNKNOWN")) AS unknown
+    BY asset scan_id
+
+/* 2. Scheduled alert: every minute, last five minutes, results > 0, per result.
+   Suppress 24 hours on asset,scan_id. Enable Triggered Alerts and existing email.
+   A fresh WEB01 test creates a new run ID and publishes one actual priority sample. */
+index=web sourcetype="trivy:findings" earliest=-5m latest=now
+source="/var/log/trivy/splunk-recovery/findings.jsonl"
+| search integration="trivy" event_type="vulnerability_finding"
+| stats count AS finding_events
+    count(eval(severity="CRITICAL")) AS critical
+    count(eval(severity="HIGH")) AS high
+    values(package) AS packages values(vulnerability_id) AS advisory_ids
+    BY asset scan_id
+| where critical>0 OR high>0
+| eval detection=if(like(scan_id,"alert-test-%"),
+    "Controlled A03 alert pipeline test", "Trivy scanner-reported vulnerability findings")
+
+/* 3. Individual test records. Replace the wildcard with the exact run ID if needed. */
+index=web sourcetype="trivy:findings" earliest=-24h latest=now
+source="/var/log/trivy/splunk-recovery/findings.jsonl"
+scan_id="alert-test-*"
+| table _time asset scan_id severity package vulnerability_id validation_sample test_purpose
+| sort 0 -_time
+
+/* 4. Preserved ingestion diagnostic: count markers directly in raw events.
+   Run against one selected source; the original source contains the earlier merged batch. */
+index=web earliest=-24h latest=now source="/var/log/trivy/findings.json"
+| rex field=_raw max_match=0 "\"event_type\"\s*:\s*\"(?<record_marker>vulnerability_finding)\""
+| eval records_in_event=coalesce(mvcount(record_marker),0), raw_characters=len(_raw)
+| stats count AS indexed_events sum(records_in_event) AS finding_records
+    max(records_in_event) AS most_records_in_one_event
+    max(raw_characters) AS largest_event_characters
+/* 5. Critical/High finding investigation. */
+index=web sourcetype="trivy:findings" earliest=-24h latest=now
+source="/var/log/trivy/splunk-recovery/findings.jsonl"
+| search integration="trivy" event_type="vulnerability_finding" severity IN ("CRITICAL","HIGH")
+| table _time asset scan_id severity package package_path vulnerability_id installed_version fixed_version assessment_status
+| sort 0 -_time
+
+/* 6. Two-record ingestion canary. Expected: 2 events and 2 distinct probes. */
+index=web sourcetype="trivy:findings" earliest=-24h latest=now
+source="/var/log/trivy/splunk-recovery/canary.jsonl"
+| stats count AS parsed_events dc(probe_id) AS distinct_probes values(event_type) AS event_types
+
+/* 7. Recovery splitting diagnostic. Select the baseline scan_id if later tests exist.
+   For the baseline batch: 119 indexed events, 119 records, maximum 1 record/event. */
+index=web sourcetype="trivy:findings" earliest=-24h latest=now
+source="/var/log/trivy/splunk-recovery/findings.jsonl"
+| search integration="trivy" event_type="vulnerability_finding"
+| rex field=_raw max_match=0 "\"event_type\"\s*:\s*\"(?<record_marker>vulnerability_finding)\""
+| eval records_in_event=coalesce(mvcount(record_marker),0)
+| stats count AS indexed_events sum(records_in_event) AS finding_records max(records_in_event) AS most_records_in_one_event BY asset scan_id

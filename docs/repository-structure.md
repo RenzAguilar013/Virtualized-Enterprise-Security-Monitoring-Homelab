@@ -47,27 +47,10 @@ Virtualized-Enterprise-Security-Monitoring-Homelab/
             A03-software-supply-chain/
                 OWASP-A03-Software-Supply-Chain-Validation.md
                 splunk-searches.spl
-                wazuh-rules.xml
                 wazuh-queries.txt
-                config/
-                    README.md
-                    splunk-inputs.conf
-                    splunk-props.conf
-                    splunk-default.meta
-                    wazuh-localfile.xml
-                scripts/
-                    README.md
-                    trivy_common.py
-                    export-trivy-findings.py
-                    run-alert-test.py
-                reports/
-                    README.md
-                    original exports to upload from WEB01
+                wazuh-rules.xml
                 screenshots/
                     README.md
-                    published source captures
-                    final captures to upload
-                    troubleshooting/
             A05-injection/
                 OWASP-A05-SQL-Injection-Validation.md
                 burp-test-cases.md
@@ -111,18 +94,14 @@ remediation is claimed.
 ## A03 evidence and completion
 
 The [A03 report](../tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md)
-records assessment and alert workflow completion per operator confirmation.
-The public A03 update contains the summary and manifests. Thirteen source captures,
-implementation configuration and scripts are prepared separately for review. Final summary, live dashboard,
-triggered-alert/email images and original report exports still need uploading.
-Final post-test recovery results have not been supplied.
+documents the assessment, selected advisory review, Splunk and Wazuh detection
+outcomes, scheduled alert settings and recovery status.
 
-Use the [A03 screenshot manifest](../tests/owasp-top-10-2025/A03-software-supply-chain/screenshots/README.md)
-for exact filenames 01–21, including 16a/16b, optional 18b and final recovery
-21a/21b. The reports inventory lists expected exports without fabricating them.
+The folder uses the same structure as A01/A02 and A07: a validation report,
+Splunk searches, Wazuh queries, Wazuh rules and a screenshots folder.
+The query/rule files are published beside the report.
 
-## A03 public update scope
-
-The A03 file tree above is the target layout. The summary and directory README
-files are published; detailed configuration, scripts, raw exports and screenshots
-are not included in this public summary update. Existing exercises remain in place.
+The [screenshot checklist](../tests/owasp-top-10-2025/A03-software-supply-chain/screenshots/README.md)
+distinguishes reviewed captures from operator-confirmed outcomes and remaining
+uploads. Source images and original scan exports have not been published in this
+update. Final post-test recovery results have not been supplied.

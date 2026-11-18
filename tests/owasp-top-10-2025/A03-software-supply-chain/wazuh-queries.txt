@@ -1,0 +1,23 @@
+# Threat Hunting / Events. Select the publication/test time window.
+agent.name: "WEB01-10.10.10.70" AND location: "/var/log/trivy/findings.json" AND (rule.id: "119981" OR rule.id: "119982")
+
+# Critical findings
+agent.name: "WEB01-10.10.10.70" AND rule.id: "119981"
+
+# High findings
+agent.name: "WEB01-10.10.10.70" AND rule.id: "119982"
+
+# Add a data.scan_id filter with the exact baseline/test ID to isolate a batch.
+# Baseline expected alerts when published once: 7 Critical and 23 High.
+# New one-finding test runs add separate alerts. Rule 119980 has level 0.
+# Exact test run: replace REPLACE_WITH_EXACT_SCAN_ID with the WEB01 test output.
+data.asset: "WEB01" AND data.integration: "trivy" AND data.scan_id: "REPLACE_WITH_EXACT_SCAN_ID" AND (rule.id: "119981" OR rule.id: "119982")
+
+# Specific advisory investigation, using the baseline Critical example.
+data.asset: "WEB01" AND data.vulnerability_id: "CVE-2023-46233" AND rule.id: "119981"
+
+# Agent-name-independent fallback if the deployed agent uses another display name.
+data.asset: "WEB01" AND data.integration: "trivy" AND (rule.id: "119981" OR rule.id: "119982")
+
+# Parent rule 119980 is level 0 and is not expected in the normal alert index.
+# Use wazuh-logtest to verify the parent/decoder; these dashboard searches target alerts.

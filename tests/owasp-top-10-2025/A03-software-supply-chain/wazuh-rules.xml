@@ -1,0 +1,20 @@
+<group name="trivy,owasp_a03,">
+  <rule id="119980" level="0">
+    <decoded_as>json</decoded_as>
+    <field name="integration" type="pcre2">^trivy$</field>
+    <field name="event_type" type="pcre2">^vulnerability_finding$</field>
+    <description>Trivy scanner finding received.</description>
+  </rule>
+  <rule id="119981" level="12">
+    <if_sid>119980</if_sid>
+    <field name="severity" type="pcre2">^CRITICAL$</field>
+    <description>Trivy CRITICAL scanner finding on $(asset): $(package), $(vulnerability_id). Applicability requires review.</description>
+    <group>trivy_critical,</group>
+  </rule>
+  <rule id="119982" level="10">
+    <if_sid>119980</if_sid>
+    <field name="severity" type="pcre2">^HIGH$</field>
+    <description>Trivy HIGH scanner finding on $(asset): $(package), $(vulnerability_id). Applicability requires review.</description>
+    <group>trivy_high,</group>
+  </rule>
+</group>

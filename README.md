@@ -141,10 +141,13 @@ post-test recovery result remains to be attached and recorded.
 
 See the [A03 report](tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md)
 and [evidence manifest](tests/owasp-top-10-2025/A03-software-supply-chain/screenshots/README.md)
-for evidence status. This public update contains the project summary and evidence
-manifest. Supporting configuration, scripts and source captures are prepared
-separately; original scan exports and final recovery results still need to be
-supplied. No dependency patching or exploitation of dependency advisories is claimed.
+for evidence status. The activity folder includes the validation report,
+[Splunk searches](tests/owasp-top-10-2025/A03-software-supply-chain/splunk-searches.spl),
+[Wazuh queries](tests/owasp-top-10-2025/A03-software-supply-chain/wazuh-queries.txt),
+[Wazuh rules](tests/owasp-top-10-2025/A03-software-supply-chain/wazuh-rules.xml)
+and screenshot checklist, matching the other OWASP activity folders.
+Original scan exports, final captures and final recovery results still need to be supplied.
+No dependency patching or exploitation of dependency advisories is claimed.
 
 ### A05 product-search injection activity
 
@@ -349,9 +352,9 @@ for the reviewed evidence and limitations.
         │       └── 41 evidence screenshots
         ├── A03-software-supply-chain/
         │   ├── OWASP-A03-Software-Supply-Chain-Validation.md
-        │   ├── config/
-        │   ├── scripts/
-        │   ├── reports/
+        │   ├── splunk-searches.spl
+        │   ├── wazuh-queries.txt
+        │   ├── wazuh-rules.xml
         │   └── screenshots/
         ├── A05-injection/
         │   ├── OWASP-A05-SQL-Injection-Validation.md
@@ -369,9 +372,6 @@ for the reviewed evidence and limitations.
             └── screenshots/
                 └── README.md
 ```
-
-The A03 configuration, script and report folders currently contain status manifests;
-the detailed implementation and evidence package is prepared separately.
 
 The A05 screenshots are uploaded. The screenshot manifest records the reviewed
 results and identifies screenshots 03, 04, and 06 for token redaction.
