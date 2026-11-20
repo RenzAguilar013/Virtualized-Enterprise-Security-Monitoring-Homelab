@@ -1,0 +1,19 @@
+<group name="local,web,owasp_a04,cryptographic_failures,">
+
+  <rule id="119990" level="0">
+    <decoded_as>json</decoded_as>
+    <field name="integration" type="pcre2">^a04_transport$</field>
+    <field name="asset" type="pcre2">^WEB01$</field>
+    <description>A04 Nginx transport telemetry.</description>
+  </rule>
+
+  <rule id="119991" level="10">
+    <if_sid>119990</if_sid>
+    <field name="scheme" type="pcre2">^http$</field>
+    <field name="method" type="pcre2">^POST$</field>
+    <field name="uri" type="pcre2">^/rest/user/login$</field>
+    <description>OWASP A04: Unencrypted HTTP login POST on $(asset) from $(src_ip), port $(server_port), status $(status).</description>
+    <group>unencrypted_authentication,</group>
+  </rule>
+
+</group>

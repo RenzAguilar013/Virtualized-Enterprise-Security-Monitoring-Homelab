@@ -1,0 +1,57 @@
+/* Run each search separately, without its comment label.
+   Historical investigations use the time picker; select 20 November 2026 or All time.
+   KV_MODE=json is configured for nginx:a04:json. Do not add redundant spath. */
+
+/* 1. Original combined-log investigation using the fresh URL marker. */
+index=* "A04-TRANSPORT-CHECK-01"
+| table _time index host source sourcetype _raw
+| sort 0 -_time
+
+/* 2. Transport-aware HTTP login investigation. */
+index=web sourcetype="nginx:a04:json"
+integration="a04_transport" scheme="http" method="POST" uri="/rest/user/login"
+| table _time timestamp asset src_ip scheme server_port method uri status request_uri
+| sort 0 -_time
+
+/* 3. Saved scheduled alert: every minute, -5m to now; results > 0; per result.
+   Suppress 5 minutes by asset,src_ip,uri,validation_id.
+   Enable Add to Triggered Alerts (High) and the existing lab email action.
+   Email subject, message and inline-table settings are documented in the report. */
+index=web sourcetype="nginx:a04:json" earliest=-5m latest=now
+integration="a04_transport" scheme="http"
+method="POST" uri="/rest/user/login"
+| rex field=request_uri "(?:[?&])a04_test=(?<validation_id>[^&]+)"
+| eval validation_id=coalesce(validation_id,"unmarked")
+| stats count AS attempts
+    values(status) AS http_statuses
+    values(server_port) AS server_ports
+    earliest(_time) AS first_seen
+    latest(_time) AS last_seen
+    BY asset src_ip uri scheme validation_id
+| eval severity="high",
+    detection="OWASP A04 - Unencrypted HTTP Login"
+| convert ctime(first_seen) ctime(last_seen)
+| table detection severity asset src_ip scheme server_ports uri attempts http_statuses validation_id first_seen last_seen
+
+/* 4. Controlled notification-test timeline. Replace the wildcard with an exact TEST_ID to isolate one run. */
+index=web sourcetype="nginx:a04:json"
+integration="a04_transport" request_uri="*a04_test=A04-ALERT-*"
+| rex field=request_uri "(?:[?&])a04_test=(?<validation_id>[^&]+)"
+| table _time timestamp asset src_ip scheme server_port method uri status validation_id
+| sort 0 -_time
+
+/* 5. Reviewed post-test recovery GET. This is operational recovery, not TLS remediation. */
+index=web sourcetype="nginx:a04:json" "A04-RECOVERY-CHECK-01"
+| table _time asset scheme method uri status
+| sort 0 -_time
+
+/* 6. Event-boundary diagnostic for the new JSON source.
+   Each indexed event should contain one a04_transport integration marker. */
+index=web sourcetype="nginx:a04:json"
+source="/var/log/nginx/juice-shop-a04-transport.log"
+| rex field=_raw max_match=0 "\"integration\"\s*:\s*\"(?<record_marker>a04_transport)\""
+| eval records_in_event=coalesce(mvcount(record_marker),0)
+| stats count AS indexed_events
+    sum(records_in_event) AS transport_records
+    max(records_in_event) AS most_records_in_one_event
+    BY source

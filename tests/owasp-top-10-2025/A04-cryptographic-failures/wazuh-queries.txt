@@ -1,0 +1,24 @@
+# Wazuh Threat Hunting / Events queries. Select the activity or test time range.
+# Asset-based filtering avoids dependence on the agent's display name.
+
+# 1. Live A04 HTTP login alerts
+rule.id: "119991" AND data.asset: "WEB01"
+
+# 2. Kali source, with explicit transport/method checks
+rule.id: "119991" AND data.asset: "WEB01" AND data.src_ip: "10.10.10.40" AND data.scheme: "http" AND data.method: "POST"
+
+# 3. Exact reviewed rule-check request
+rule.id: "119991" AND data.request_uri: "/rest/user/login?a04_test=A04-RULE-CHECK-01"
+
+# 4. Final notification test: replace the example with the exact TEST_ID printed on Kali
+rule.id: "119991" AND data.request_uri: "/rest/user/login?a04_test=A04-ALERT-REPLACE_WITH_EXACT_UTC_ID"
+
+# 5. Source log plus A04 rule
+rule.id: "119991" AND location: "/var/log/nginx/juice-shop-a04-transport.log"
+
+# 6. Earlier A07 authentication-failure coverage; distinct from the A04 JSON rule
+rule.id: "119972" AND full_log: "A04-TRANSPORT-CHECK-01"
+
+# Rule 119990 has level 0: verify it with wazuh-logtest, not the normal alert index.
+# Paste complete, single-line JSON, not pretty-printed multi-line JSON.
+# Logtest results do not establish live collection or actual email delivery.

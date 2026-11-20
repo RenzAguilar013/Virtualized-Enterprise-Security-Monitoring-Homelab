@@ -17,7 +17,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra and validation tooling |
 | Linux01 | `10.10.10.50` | Ubuntu telemetry host, auditd, FortiGate syslog receiver, Wazuh agent, Splunk Universal Forwarder and controlled agent-health validation |
 | Splunk Enterprise | `10.10.10.60` | Central search, dashboards, scheduled alerts and SMTP email actions |
-| WEB01 | `10.10.10.70` | Ubuntu web-security target with Nginx, Docker, OWASP Juice Shop, Wazuh Agent, Splunk Universal Forwarder and Trivy image/dependency assessment |
+| WEB01 | `10.10.10.70` | Ubuntu web-security target with Nginx, Docker, OWASP Juice Shop, Wazuh Agent, Splunk Universal Forwarder and Trivy image/dependency assessment and scheme-aware authentication telemetry |
 
 ### Network design
 
@@ -50,6 +50,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Splunk dashboards, Wazuh threat hunting, scheduled alerts and SMTP notifications
 - Dedicated WEB01 Nginx access/error telemetry forwarded to Wazuh and the Splunk `web` index
 - Trivy findings normalized to JSON Lines, collected by Wazuh and Splunk with scan identifiers
+- Separate Nginx JSON transport log with scheme, port, method, URI, status and validation markers
 
 ### Detection and investigation
 
@@ -74,6 +75,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Wazuh SQL-injection alert observed for a single-quote product-search request
 - Trivy container/dependency assessment, CycloneDX SBOM generation and advisory applicability review
 - Custom Wazuh Critical/High scanner-finding rules and Splunk alert/email validation
+- HTTP authentication-transport assessment from Kali using Burp, curl and a scoped packet capture
+- Wazuh rule `119991` for unencrypted login POSTs and Splunk transport-aware alert/email configuration
 - Source IP, destination IP, user, host, port, URI, HTTP status and timeline correlation
 
 ## Detection engineering and validation
@@ -97,6 +100,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Assessed 592 detected components; recorded 119 package findings across 93 advisory IDs
 - Investigated runtime package paths, PBKDF2 defaults, nested lodash function availability and JWT configuration
 - Corrected Splunk event splitting and removed redundant JSON extraction from the final queries
+- Reviewed A04 JSON logtest evidence matching Wazuh rule `119991` at level `10`
+- Verified A04 recovery: healthy WEB01 services, loopback-only container, HTTP 200 and fresh Splunk collection
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -121,6 +126,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 |---|---|---|
 | [Juice Shop exposed-resource detection](tests/owasp-top-10-2025/A01-A02-exposed-resources/OWASP-A01-A02-Exposed-Resources-Validation.md) | **A01:2025 Broken Access Control**, **A02:2025 Security Misconfiguration** | WEB01, Docker, Nginx, Burp Suite, exposed `/ftp/` resources, Wazuh custom rules, Splunk investigation, triggered alert and email notification |
 | [Container and dependency assessment](tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md) | **A03:2025 Software Supply Chain Failures** | Trivy 0.76.2, CycloneDX SBOM, 592 components, 119 package findings / 93 advisories, applicability triage, custom Wazuh severity rules, Splunk ingestion and user-confirmed alert/email workflow |
+| [HTTP authentication transport assessment](tests/owasp-top-10-2025/A04-cryptographic-failures/OWASP-A04-Cryptographic-Failures-Validation.md) | **A04:2025 Cryptographic Failures** | HTTP/HTTPS checks, scheme-aware JSON telemetry, Wazuh rule `119991`, Splunk alert/email configuration and reviewed recovery; HTTPS enforcement remains open |
 | [Product-search SQL injection](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md) | **A05:2025 Injection** | Completed: Boolean response comparison, Nginx/Splunk timeline, triggered alert and email, Wazuh rule `31164`, and recovery evidence |
 | [Authentication failure and rate-limit validation](tests/owasp-top-10-2025/A07-authentication-failures/OWASP-A07-Authentication-Failures-Validation.md) | **A07:2025 Authentication Failures** | Controlled HTTP `401` sequence, immediate post-failure `200`, Nginx, Wazuh rules `119972`/`119973`, Splunk threshold alert and SMTP notification |
 
@@ -137,7 +143,7 @@ passed logtest, and the operator confirmed live Wazuh alerts, the corrected
 Splunk summary, and triggered-alert/email screenshot completion. A reusable
 WEB01 test runs a fresh scan and forwards one actual priority finding with a
 new test-run ID. The pre-integration health check was reviewed; the final
-post-test recovery result remains to be attached and recorded.
+recovery captures have since been uploaded; their outcome review remains tracked in A03.
 
 See the [A03 report](tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md)
 and [evidence manifest](tests/owasp-top-10-2025/A03-software-supply-chain/screenshots/README.md)
@@ -146,8 +152,30 @@ for evidence status. The activity folder includes the validation report,
 [Wazuh queries](tests/owasp-top-10-2025/A03-software-supply-chain/wazuh-queries.txt),
 [Wazuh rules](tests/owasp-top-10-2025/A03-software-supply-chain/wazuh-rules.xml)
 and screenshot checklist, matching the other OWASP activity folders.
-Original scan exports, final captures and final recovery results still need to be supplied.
+A03 source captures have since been uploaded. Original scan-export availability and final recovery review remain tracked in its report.
 No dependency patching or exploitation of dependency advisories is claimed.
+
+### A04 authentication transport assessment
+
+On 20 November 2026, Kali checked Juice Shop's HTTP/HTTPS behavior and generated
+fictional login requests. HTTP served the application; the connection to port
+443 failed before a TLS handshake. A separate Nginx JSON log now records scheme,
+port, method, URI and status for Wazuh and Splunk.
+
+The reviewed JSON event matched Wazuh rule `119991`, level `10`. The configured
+Splunk alert runs every minute, groups matching HTTP login POSTs by source and
+validation ID, and includes a contextual email message and inline results.
+Live-alert and received-email images remain to be uploaded for review.
+
+Recovery evidence confirms active application/agent services, the running
+forwarder, Juice Shop's loopback binding, HTTP 200 with three products and a
+fresh recovery GET indexed in Splunk. **HTTPS remediation remains open.**
+
+See the [A04 report](tests/owasp-top-10-2025/A04-cryptographic-failures/OWASP-A04-Cryptographic-Failures-Validation.md),
+[Splunk searches](tests/owasp-top-10-2025/A04-cryptographic-failures/splunk-searches.spl),
+[Wazuh queries](tests/owasp-top-10-2025/A04-cryptographic-failures/wazuh-queries.txt),
+[Wazuh rules](tests/owasp-top-10-2025/A04-cryptographic-failures/wazuh-rules.xml) and
+[concise evidence checklist](tests/owasp-top-10-2025/A04-cryptographic-failures/screenshots/README.md).
 
 ### A05 product-search injection activity
 
@@ -165,6 +193,16 @@ See the [A05 report](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injecti
 for the reviewed evidence and limitations.
 
 ## Completed response workflows
+
+### A04 authentication transport detection
+
+1. Checked HTTP and HTTPS reachability from Kali using fictional login data.
+2. Added scheme-aware JSON telemetry alongside the existing Nginx access log.
+3. Configured Wazuh JSON collection and verified the HTTP-login rule in logtest.
+4. Configured Splunk single-line ingestion, JSON extraction, scheduled alerting and a contextual email action.
+5. Used fresh validation IDs to correlate controlled test runs.
+6. Verified application availability and continued Splunk collection after testing; retain HTTPS enforcement as an open finding.
+
 
 ### A03 scanner-finding alert validation
 
@@ -356,6 +394,14 @@ for the reviewed evidence and limitations.
         │   ├── wazuh-queries.txt
         │   ├── wazuh-rules.xml
         │   └── screenshots/
+        ├── A04-cryptographic-failures/
+        │   ├── OWASP-A04-Cryptographic-Failures-Validation.md
+        │   ├── splunk-searches.spl
+        │   ├── wazuh-queries.txt
+        │   ├── wazuh-rules.xml
+        │   └── screenshots/
+        │       ├── README.md
+        │       └── 3 reviewed key captures
         ├── A05-injection/
         │   ├── OWASP-A05-SQL-Injection-Validation.md
         │   ├── burp-test-cases.md
@@ -406,9 +452,11 @@ replacements; this publication cleanup is recorded separately from lab completio
 - Authentication-control testing, rate-limit and lockout validation
 - Controlled SQL-injection testing and investigation of Wazuh web alerts
 - Container dependency assessment, SBOM analysis, advisory triage and scanner-finding SIEM integration
+- HTTP authentication-transport assessment, scheme-aware Nginx JSON logging and dual-SIEM transport detections
 - Wazuh custom web rules and Splunk web-security alert engineering
 - Incident containment, recovery and technical documentation
 
 ## Disclaimer
 
 All security testing documented in this repository was conducted only against privately owned and authorized virtual machines in an isolated homelab. The material is intended for defensive security education and portfolio demonstration.
+

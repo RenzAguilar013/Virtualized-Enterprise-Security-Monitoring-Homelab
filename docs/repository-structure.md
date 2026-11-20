@@ -1,7 +1,7 @@
 # Repository Structure
 
 The following is the current documentation layout for the homelab, including
-A03 supply-chain assessment and the existing web exercises. Existing exercises and evidence stay in their original folders.
+A03 supply-chain assessment, A04 transport validation and the existing web exercises. Existing exercises and evidence stay in their original folders.
 Screenshot collections are collapsed for readability.
 
 ```text
@@ -51,6 +51,16 @@ Virtualized-Enterprise-Security-Monitoring-Homelab/
                 wazuh-rules.xml
                 screenshots/
                     README.md
+            A04-cryptographic-failures/
+                OWASP-A04-Cryptographic-Failures-Validation.md
+                splunk-searches.spl
+                wazuh-queries.txt
+                wazuh-rules.xml
+                screenshots/
+                    README.md
+                    02-a04-kali-http-https-transport-check.png
+                    12-a04-wazuh-http-login-rule-logtest.png
+                    20-a04-recovery-validation.png
             A05-injection/
                 OWASP-A05-SQL-Injection-Validation.md
                 burp-test-cases.md
@@ -103,5 +113,21 @@ The query/rule files are published beside the report.
 
 The [screenshot checklist](../tests/owasp-top-10-2025/A03-software-supply-chain/screenshots/README.md)
 distinguishes reviewed captures from operator-confirmed outcomes and remaining
-uploads. Source images and original scan exports have not been published in this
-update. Final post-test recovery results have not been supplied.
+uploads. The A03 source captures, including final recovery images, have since been uploaded.
+Original scan-export availability and final recovery outcome review remain tracked in A03.
+
+
+## A04 structure and evidence
+
+The [A04 activity](../tests/owasp-top-10-2025/A04-cryptographic-failures/OWASP-A04-Cryptographic-Failures-Validation.md)
+uses exactly the same five-entry layout as the earlier OWASP folders: validation
+report, Splunk searches, Wazuh queries, Wazuh rules and screenshots.
+
+Three supplied key captures are published. The screenshot checklist identifies
+important packet/live-alert/notification images still to upload; setup captures
+are intentionally omitted. Configuration and the complete email message are
+embedded in the report, so no extra config or script folders are required.
+
+A04 transport checks, the JSON rule match and operational recovery were reviewed.
+HTTPS enforcement remains an open finding. The remaining unfinished categories
+are A06, A08, A09 and A10; A03 retains its separately tracked recovery review.
