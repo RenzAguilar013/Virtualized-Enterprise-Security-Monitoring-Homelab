@@ -72,3 +72,30 @@ and a later notification was operator-reported. No new VM was added.
 See the [A06 report](../tests/owasp-top-10-2025/A06-insecure-design/OWASP-A06-Insecure-Design-Validation.md)
 for configuration snapshots and evidence status. The basket was restored per
 operator confirmation; the server-side quantity-validation finding remains open.
+
+
+## A08 signed-artifact integrity flow
+
+Kali publishes a signed text artifact. WEB01 compares the transferred public-key
+baseline, pins the trusted key, and verifies candidate bytes in a separate lab
+staging gate. A modified candidate with the original detached signature is
+blocked, preserving the approved staged content. Juice Shop remains separate.
+
+| Component | A08 function |
+|---|---|
+| Kali | OpenSSL RSA-3072/SHA-256 signing; private key stays on Kali |
+| WEB01 trust | Root-owned `/etc/a08-integrity/`, pinned public-key SHA-256 |
+| WEB01 gate | `/usr/local/sbin/a08-verify-stage`, atomic verified staging |
+| WEB01 audit | `/var/log/a08-integrity/verification.jsonl`, real run ID and hash outcomes |
+| Wazuh | Built-in `86600` → scoped `119996` → blocked rule `119997`, level 10 |
+| Splunk | Index `web`, sourcetype `a08:integrity`, minutely scheduled alert and contextual email |
+| Recovery | Approved candidate passes again, hashes match, app/monitoring health and fresh Splunk row |
+
+The full JSON record exposed a rule-routing conflict hidden by the shortened
+test. After the fix, the operator confirmed the live Wazuh alert; Splunk trigger,
+email and final recovery completion were also reported. Text outputs were
+reviewed, while A08 screenshots remain to upload. No VM, inline sensor or live
+application deployment endpoint was added.
+
+See the [A08 report](../tests/owasp-top-10-2025/A08-software-data-integrity/OWASP-A08-Software-Data-Integrity-Validation.md) and
+[evidence checklist](../tests/owasp-top-10-2025/A08-software-data-integrity/screenshots/README.md).

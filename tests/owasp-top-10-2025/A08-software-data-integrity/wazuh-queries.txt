@@ -1,0 +1,32 @@
+OWASP A08:2025 — Wazuh Threat Hunting queries
+Paste ONE query into the Wazuh WEBSITE > Threat Hunting search bar.
+Start with Last 15 minutes for a fresh run; broaden if reviewing earlier evidence.
+
+1. Live blocked-artifact alerts — Screenshot 05
+rule.id: "119997"
+
+2. A08 alerts scoped to WEB01
+rule.id: "119997" AND data.asset: "WEB01"
+
+3. Signature-verification failures
+rule.id: "119997" AND data.reason: "signature_verification_failed"
+
+4. Correlate a newly generated live run (replace REPLACE_WITH_RUN_ID)
+rule.id: "119997" AND data.run_id: "REPLACE_WITH_RUN_ID"
+
+5. All alerting records from the integration
+data.integration: "a08_integrity"
+
+6. Blocked attempts that report changed staged content — investigate if present
+rule.id: "119997" AND data.staged_content_changed: "true"
+
+Notes:
+- Parent 119996 is level 0. Passed/staged events normally produce no Wazuh alert.
+- Final hierarchy: built-in 86600 -> custom 119996 -> blocked rule 119997 (level 10).
+- Match the full JSON record in logtest; a shortened test can hide the 86600 collision.
+- A logtest result is not proof of live ingestion or dashboard indexing.
+- Wazuh mail=False describes its own mail action; Splunk sends this activity's email.
+- Only-future-events=yes requires a fresh gate execution after collection starts.
+- Reuse the same actual run_id across WEB01, Wazuh, Splunk and the email when correlating.
+- The historical run a2ab65423ef14c87aa27814aa94f268a was used for the full-record
+  rule test. Its pre-fix absence from live alerts is documented in the report.

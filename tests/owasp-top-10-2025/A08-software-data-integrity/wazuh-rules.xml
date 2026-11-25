@@ -1,0 +1,18 @@
+<group name="local,owasp_a08,software_integrity,">
+  <!-- Full JSON events match built-in 86600 first (timestamp + event_type).
+       Route that branch into the narrowly scoped A08 parent. -->
+  <rule id="119996" level="0">
+    <if_sid>86600</if_sid>
+    <field name="integration" type="pcre2">^a08_integrity$</field>
+    <field name="asset" type="pcre2">^WEB01$</field>
+    <field name="event_type" type="pcre2">^artifact_verification$</field>
+    <description>A08 artifact-verification telemetry.</description>
+  </rule>
+
+  <rule id="119997" level="10">
+    <if_sid>119996</if_sid>
+    <field name="deployment_action" type="pcre2">^blocked$</field>
+    <description>OWASP A08: Artifact gate blocked $(artifact) on $(asset). Reason: $(reason); verification: $(verification_result); run: $(run_id).</description>
+    <group>artifact_blocked,</group>
+  </rule>
+</group>

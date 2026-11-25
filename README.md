@@ -1,6 +1,6 @@
 # Virtualized Enterprise Security and Monitoring Homelab
 
-A multi-host enterprise security homelab built with VMware Workstation, FortiGate, Active Directory, Wazuh, Splunk Enterprise, Kali Linux, Nessus, Sysmon, auditd, Atomic Red Team, Sigma, Docker, Nginx, OWASP Juice Shop, Burp Suite Community Edition and Trivy.
+A multi-host enterprise security homelab built with VMware Workstation, FortiGate, Active Directory, Wazuh, Splunk Enterprise, Kali Linux, Nessus, Sysmon, auditd, Atomic Red Team, Sigma, Docker, Nginx, OWASP Juice Shop, Burp Suite Community Edition, Trivy and OpenSSL.
 
 The environment simulates SOC monitoring, centralized telemetry, firewall administration, identity security, vulnerability assessment, detection engineering, alerting, incident investigation, containment, recovery and repeatable NIST CSF 2.0 and MITRE ATT&CK validation.
 
@@ -14,10 +14,10 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | DC01 | `10.10.10.10` | Windows Server, AD DS, DNS, Sysmon, SMB/File Share auditing, Wazuh agent and Splunk Universal Forwarder |
 | Renz | `10.10.10.20` | Windows 11 domain endpoint, Sysmon process/network telemetry, PowerShell, Task Scheduler, Active Directory discovery, SMB validation and SIEM agents |
 | Wazuh | `10.10.10.30` | Manager, indexer, dashboard, correlation and endpoint alerting |
-| Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra and validation tooling |
+| Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra, Burp and A08 artifact signing |
 | Linux01 | `10.10.10.50` | Ubuntu telemetry host, auditd, FortiGate syslog receiver, Wazuh agent, Splunk Universal Forwarder and controlled agent-health validation |
 | Splunk Enterprise | `10.10.10.60` | Central search, dashboards, scheduled alerts and SMTP email actions |
-| WEB01 | `10.10.10.70` | Ubuntu web-security target with Nginx, Docker, OWASP Juice Shop, Wazuh Agent, Splunk Universal Forwarder and Trivy dependency assessment, authentication-transport and basket-quantity telemetry |
+| WEB01 | `10.10.10.70` | Ubuntu web-security target with Nginx, Docker, OWASP Juice Shop, Wazuh Agent, Splunk Universal Forwarder and Trivy dependency assessment, authentication-transport, basket-quantity and signed-artifact verification telemetry |
 
 ### Network design
 
@@ -52,6 +52,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Trivy findings normalized to JSON Lines, collected by Wazuh and Splunk with scan identifiers
 - Separate Nginx JSON transport log with scheme, port, method, URI, status and validation markers
 - Quantity-aware basket-update JSON collected by Wazuh and Splunk, excluding tokens and full request bodies
+- Signature-verification JSON collected by Wazuh and Splunk with outcome, rejection reason, run ID and before/after artifact hashes
 
 ### Detection and investigation
 
@@ -79,6 +80,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - HTTP authentication-transport assessment from Kali using Burp, curl and a scoped packet capture
 - Wazuh rule `119991` for unencrypted login POSTs and Splunk transport-aware alert/email configuration
 - A06 own-basket business-rule testing, Wazuh negative-quantity rule `119995` and scheduled Splunk detection
+- OpenSSL RSA/SHA-256 artifact signing, trusted-key pinning and a verification gate before lab staging
+- A08 Wazuh blocked-artifact rule `119997`, full-record JSON rule-conflict diagnosis and Splunk alert/email validation
 - SMTP notification troubleshooting through scheduler and email-action logs
 - Source IP, destination IP, user, host, port, URI, HTTP status and timeline correlation
 
@@ -107,6 +110,9 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Verified A04 recovery: healthy WEB01 services, loopback-only container, HTTP 200 and fresh Splunk collection
 - Reviewed A06 quantity extraction and scheduled searches with matching results and email-action selection
 - Diagnosed a temporary SMTP hostname-resolution failure during A06 notification validation
+- Validated A08 approved-artifact staging and tampered-input rejection with unchanged active SHA-256
+- Resolved Wazuh built-in `86600` routing by parenting the scoped A08 rules beneath the matched branch
+- Completed A08 live-alert, received-email and known-good recovery workflow per operator confirmation
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -135,6 +141,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [Product-search SQL injection](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md) | **A05:2025 Injection** | Completed: Boolean response comparison, Nginx/Splunk timeline, triggered alert and email, Wazuh rule `31164`, and recovery evidence |
 | [Basket business-rule assessment](tests/owasp-top-10-2025/A06-insecure-design/OWASP-A06-Insecure-Design-Validation.md) | **A06:2025 Insecure Design** | Own-basket negative-quantity test and restoration (operator-confirmed), quantity-aware Nginx JSON, Wazuh `119995`, reviewed Splunk ingestion/scheduler evidence, notification troubleshooting; server validation remains open |
 | [Authentication failure and rate-limit validation](tests/owasp-top-10-2025/A07-authentication-failures/OWASP-A07-Authentication-Failures-Validation.md) | **A07:2025 Authentication Failures** | Controlled HTTP `401` sequence, immediate post-failure `200`, Nginx, Wazuh rules `119972`/`119973`, Splunk threshold alert and SMTP notification |
+| [Signed-artifact integrity validation](tests/owasp-top-10-2025/A08-software-data-integrity/OWASP-A08-Software-Data-Integrity-Validation.md) | **A08:2025 Software or Data Integrity Failures** | RSA/SHA-256 signing, pinned public key, modified-input rejection with unchanged staged hash, corrected Wazuh `119997`, scheduled Splunk alert, received email and recovery (operator-confirmed); screenshots pending upload |
 
 ### A03 container and dependency assessment
 
@@ -218,10 +225,41 @@ contains the collection/parsing configuration, rule behavior, scheduled search,
 email subject/message, troubleshooting and recovery limits. The [evidence
 checklist](tests/owasp-top-10-2025/A06-insecure-design/screenshots/README.md)
 keeps the eight-image portfolio story concise. Finding, live-alert, received-email
-and final-recovery captures are still to upload. **Server-side quantity validation
+and final-recovery captures have since been uploaded; detailed image review
+remains tracked separately. **Server-side quantity validation
 remains an open finding; no completed checkout or application patch is claimed.**
 
+### A08 signed-artifact integrity validation
+
+On 25 November 2026, Kali signed a lab release with OpenSSL RSA/SHA-256.
+WEB01 pinned the public-key baseline, verified candidate bytes before staging,
+and rejected a modified copy while retaining the approved artifact hash.
+JSON verification outcomes are collected by both SIEMs.
+
+Full-record testing exposed a Wazuh JSON routing conflict with built-in rule
+`86600`. The corrected A08 hierarchy matched `119997` at level `10`; the operator
+then confirmed the live-alert step, Splunk scheduled trigger, received contextual
+email and recovery validation. Gate outputs and rule-test results were reviewed
+as text; the eight portfolio screenshots remain to upload.
+
+See the [A08 report](tests/owasp-top-10-2025/A08-software-data-integrity/OWASP-A08-Software-Data-Integrity-Validation.md),
+[Splunk searches](tests/owasp-top-10-2025/A08-software-data-integrity/splunk-searches.spl),
+[Wazuh queries](tests/owasp-top-10-2025/A08-software-data-integrity/wazuh-queries.txt),
+[corrected Wazuh rules](tests/owasp-top-10-2025/A08-software-data-integrity/wazuh-rules.xml) and
+[eight-capture checklist](tests/owasp-top-10-2025/A08-software-data-integrity/screenshots/README.md).
+This validates a separate lab staging control; no Juice Shop deployment patch
+or production build-pipeline hardening is claimed. **A09 and A10 remain planned.**
+
 ## Completed response workflows
+
+### A08 artifact integrity and notification
+
+1. Signed an approved text release on Kali and verified artifact/public-key transfer hashes.
+2. Pinned the public key on WEB01 and verified candidate bytes before atomic staging.
+3. Modified a copy and confirmed signature rejection without changing the approved staged content.
+4. Collected structured outcomes in Wazuh and Splunk using a unique run ID per execution.
+5. Diagnosed and corrected a built-in JSON rule collision using the complete emitted event.
+6. Validated the live-alert, scheduled trigger, contextual email and known-good recovery workflow per operator report.
 
 ### A06 basket business-rule detection
 
@@ -230,7 +268,7 @@ remains an open finding; no completed checkout or application patch is claimed.*
 3. Added scoped quantity metadata and configured Wazuh/Splunk collection and negative-submission detections.
 4. Reviewed indexed fields, scheduled results and email-action attempts.
 5. Diagnosed the SMTP DNS failure and recorded the later operator-reported notification.
-6. Completed the guided restoration/recovery workflow per operator report; track remaining captures separately from application remediation.
+6. Completed the guided restoration/recovery workflow per operator report; track uploaded captures separately from application remediation.
 
 ### A04 authentication transport detection
 
@@ -380,90 +418,17 @@ remains an open finding; no completed checkout or application patch is claimed.*
 
 ## Repository structure
 
-```text
-.
-├── README.md
-├── assets/
-│   ├── topology.png
-│   └── topology.svg
-├── docs/
-│   ├── architecture.md
-│   ├── repository-structure.md
-│   ├── active-directory.md
-│   ├── auditd-configuration.md
-│   ├── fortigate-configuration.md
-│   ├── firewall-policies.md
-│   ├── splunk-configuration.md
-│   ├── sysmon-telemetry.md
-│   ├── vmware-network.md
-│   ├── wazuh-configuration.md
-│   ├── web-application-security-lab.md
-│   └── windows-client.md
-├── screenshots/
-│   └── platform and infrastructure evidence
-└── tests/
-    ├── T1046-network-service-discovery/
-    ├── T1053-005-windows-scheduled-task/
-    ├── T1059-001-powershell-execution-validation/
-    ├── T1070-004-windows-file-deletion/
-    ├── T1087-002-domain-account-discovery/
-    ├── T1110-ssh-password-guessing/
-    ├── T1543-003-windows-service-creation/
-    ├── T1547-001-registry-run-keys/
-    ├── T1562-001-impair-defenses/
-    ├── T1021-002-smb-windows-admin-shares/
-    └── owasp-top-10-2025/
-        ├── README.md
-        ├── shared-config/
-        │   ├── nginx-juice-shop.conf
-        │   ├── splunk-forwarder-inputs.conf
-        │   └── wazuh-agent-localfile.xml
-        ├── A01-A02-exposed-resources/
-        │   ├── OWASP-A01-A02-Exposed-Resources-Validation.md
-        │   ├── splunk-searches.spl
-        │   ├── wazuh-queries.txt
-        │   ├── wazuh-rules.xml
-        │   └── screenshots/
-        │       ├── README.md
-        │       └── 41 evidence screenshots
-        ├── A03-software-supply-chain/
-        │   ├── OWASP-A03-Software-Supply-Chain-Validation.md
-        │   ├── splunk-searches.spl
-        │   ├── wazuh-queries.txt
-        │   ├── wazuh-rules.xml
-        │   └── screenshots/
-        ├── A04-cryptographic-failures/
-        │   ├── OWASP-A04-Cryptographic-Failures-Validation.md
-        │   ├── splunk-searches.spl
-        │   ├── wazuh-queries.txt
-        │   ├── wazuh-rules.xml
-        │   └── screenshots/
-        │       ├── README.md
-        │       └── selected key evidence and uploaded working captures
-        ├── A05-injection/
-        │   ├── OWASP-A05-SQL-Injection-Validation.md
-        │   ├── burp-test-cases.md
-        │   ├── splunk-searches.spl
-        │   ├── wazuh-queries.txt
-        │   └── screenshots/
-        │       ├── README.md
-        │       └── 12 evidence screenshots
-        ├── A06-insecure-design/
-        │   ├── OWASP-A06-Insecure-Design-Validation.md
-        │   ├── splunk-searches.spl
-        │   ├── wazuh-queries.txt
-        │   ├── wazuh-rules.xml
-        │   └── screenshots/
-        │       ├── README.md
-        │       └── supplied key evidence + remaining capture checklist
-        └── A07-authentication-failures/
-            ├── OWASP-A07-Authentication-Failures-Validation.md
-            ├── splunk-searches.spl
-            ├── wazuh-queries.txt
-            ├── wazuh-rules.xml
-            └── screenshots/
-                └── README.md
-```
+| Path | Contents |
+|---|---|
+| `assets/` | Updated topology PNG and editable SVG |
+| `docs/` | Architecture, complete repository layout and platform configuration guides |
+| `screenshots/` | Existing infrastructure evidence |
+| `tests/T*/` | Ten NIST CSF / MITRE ATT&CK validation exercises |
+| `tests/owasp-top-10-2025/` | Progress index, shared configuration and A01–A08 activity folders |
+| `tests/owasp-top-10-2025/A08-software-data-integrity/` | A08 report, Splunk searches, Wazuh queries, corrected rules and screenshots checklist |
+
+See the [complete repository structure](docs/repository-structure.md) for exact
+activity folder names and published file locations.
 
 The A05 screenshots are uploaded. The screenshot manifest records the reviewed
 results and identifies screenshots 03, 04, and 06 for token redaction.
@@ -500,11 +465,11 @@ replacements; this publication cleanup is recorded separately from lab completio
 - Container dependency assessment, SBOM analysis, advisory triage and scanner-finding SIEM integration
 - HTTP authentication-transport assessment, scheme-aware Nginx JSON logging and dual-SIEM transport detections
 - Basket business-rule assessment, quantity-aware telemetry, negative-submission detections and SMTP/DNS troubleshooting
+- Artifact signing, public-key trust pinning and verification before staging
+- Full-event Wazuh rule hierarchy troubleshooting and integrity-alert correlation
 - Wazuh custom web rules and Splunk web-security alert engineering
 - Incident containment, recovery and technical documentation
 
 ## Disclaimer
 
 All security testing documented in this repository was conducted only against privately owned and authorized virtual machines in an isolated homelab. The material is intended for defensive security education and portfolio demonstration.
-
-

@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1640" viewBox="0 0 1600 1640">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1830" viewBox="0 0 1600 1830">
   <title>Virtualized Enterprise Security and Monitoring Homelab</title>
-  <desc>Network topology with FortiGate, VMnet2 hosts, Kali, WEB01, Wazuh and Splunk. WEB01 runs Trivy for local SBOM and dependency assessment; JSON findings are sent to both SIEMs. A04 adds scheme-aware Nginx JSON, an HTTP-login Wazuh rule, and Splunk alert/email configuration. HTTPS enforcement remains open. A06 adds quantity-aware basket metadata and negative-submission detection; server-side quantity validation remains open. The original card-based design and network addresses are retained.</desc>
+  <desc>Network topology with FortiGate, VMnet2 hosts, Kali, WEB01, Wazuh and Splunk. WEB01 runs Trivy for local SBOM and dependency assessment; JSON findings are sent to both SIEMs. A04 adds scheme-aware Nginx JSON, an HTTP-login Wazuh rule, and Splunk alert/email configuration. HTTPS enforcement remains open. A06 adds quantity-aware basket metadata and negative-submission detection; server-side quantity validation remains open. A08 adds signed-artifact verification on WEB01, blocked modified candidates, preserved approved hashes, and Wazuh/Splunk alerting. A08 live-alert/email/recovery outcomes are operator-confirmed; images pending upload. The original card-based design and network addresses are retained.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
       <path d="M0 0L10 5L0 10Z" fill="#243b64"/>
@@ -18,7 +18,7 @@
       .badge{rx:5}.white{fill:#fff}.bold{font-weight:700}
     </style>
   </defs>
-  <rect width="1600" height="1640" fill="#fff"/>
+  <rect width="1600" height="1830" fill="#fff"/>
 
   <!-- Header -->
   <g transform="translate(18 15)">
@@ -26,7 +26,7 @@
     <rect x="15" y="31" width="28" height="20" fill="#183a67"/><rect x="39" y="47" width="9" height="9" fill="#18a558"/>
   </g>
   <text x="85" y="45" class="title">Virtualized Enterprise Security &amp; Monitoring Homelab</text>
-  <text x="87" y="70" class="subtitle">FortiGate • Active Directory • Wazuh • Splunk • Kali/Burp • Nginx • OWASP Juice Shop • Docker • Trivy</text>
+  <text x="87" y="70" class="subtitle">FortiGate • Active Directory • Wazuh • Splunk • Kali/Burp • Nginx • OWASP Juice Shop • Docker • Trivy • OpenSSL</text>
 
   <!-- Core network -->
   <g transform="translate(245 88)">
@@ -61,7 +61,7 @@
   <text x="665" y="184" class="t">• Burp Community + Firefox proxy</text>
   <text x="665" y="205" class="t">• Nmap, Wireshark, Nessus and Hydra</text>
   <text x="665" y="226" class="t">• Proxy interception and Repeater testing</text>
-  <text x="665" y="247" class="t">• OWASP and ATT&amp;CK exercises</text>
+  <text x="665" y="247" class="t">• OWASP tests + OpenSSL artifact signing</text>
   <rect x="665" y="278" width="290" height="27" class="badge" fill="#f2eaff" stroke="#7c3cc4"/>
   <text x="810" y="297" text-anchor="middle" class="s bold">AUTHORIZED TEST SOURCE • 10.10.10.40</text>
   <path d="M405 339H810V324" class="line"/>
@@ -109,7 +109,7 @@
     <rect x="15" y="51" width="42" height="42" rx="21" fill="#f04b24"/><text x="36" y="78" text-anchor="middle" class="h white">W</text>
     <text x="68" y="58" class="h orange">Wazuh SIEM</text><text x="68" y="80" class="ip navy">10.10.10.30</text>
     <text x="16" y="111" class="t">• Manager, indexer and dashboard</text><text x="16" y="131" class="t">• Endpoint, web and scan correlation</text>
-    <text x="16" y="151" class="t">• Web, basket + Trivy severity rules</text><text x="16" y="171" class="t">• Threat hunting and agent health</text>
+    <text x="16" y="151" class="t">• Web, Trivy + artifact integrity rules</text><text x="16" y="171" class="t">• Threat hunting and agent health</text>
     <rect x="16" y="197" width="118" height="17" class="badge" fill="#fff0eb"/><text x="75" y="209" text-anchor="middle" class="s bold orange">ENDPOINT SIEM</text>
   </g>
   <g transform="translate(895 420)">
@@ -124,7 +124,7 @@
     <rect width="390" height="220" class="card" stroke="#168444"/><rect width="390" height="35" rx="7" fill="#ecf9f0"/>
     <rect x="15" y="51" width="42" height="42" rx="8" fill="#168444"/><text x="36" y="78" text-anchor="middle" class="h white">S</text>
     <text x="68" y="58" class="h green">Splunk Enterprise</text><text x="68" y="80" class="ip navy">10.10.10.60</text>
-    <text x="16" y="111" class="t">• Centralized indexing and correlation</text><text x="16" y="131" class="t">• Web index: transport, basket + Trivy</text>
+    <text x="16" y="111" class="t">• Centralized indexing and correlation</text><text x="16" y="131" class="t">• Web index: web, Trivy + artifact JSON</text>
     <text x="16" y="151" class="t">• SPL field extraction and investigation</text><text x="16" y="171" class="t">• Scheduled alerts + Gmail SMTP actions</text>
     <rect x="16" y="197" width="142" height="17" class="badge" fill="#ecf9f0"/><text x="87" y="209" text-anchor="middle" class="s bold green">CENTRAL SIEM</text>
   </g>
@@ -137,7 +137,7 @@
   <rect x="507" y="742" width="54" height="54" rx="10" fill="#087f8c"/><text x="534" y="775" text-anchor="middle" class="h white">WEB</text>
   <text x="580" y="750" class="h teal">WEB01 • Ubuntu Web Security Target</text><text x="580" y="772" class="ip navy">10.10.10.70</text>
   <text x="580" y="797" class="t">Nginx :80 → Docker loopback 127.0.0.1:3000 → OWASP Juice Shop</text>
-  <text x="580" y="820" class="t">Transport / basket JSON + Trivy • Wazuh Agent • Splunk UF</text>
+  <text x="580" y="820" class="t">Web / Trivy / artifact JSON • Wazuh Agent • Splunk UF</text>
   <text x="580" y="843" class="s">Juice Shop is reachable only from the isolated VMnet2 lab and VMware host.</text>
   <rect x="930" y="742" width="155" height="28" class="badge" fill="#e8f7f8" stroke="#087f8c"/>
   <text x="1007" y="761" text-anchor="middle" class="s bold teal">OWASP TARGET</text>
@@ -147,7 +147,7 @@
   <rect x="990" y="652" width="225" height="17" fill="#fff"/><text x="995" y="664" class="s bold purple">Burp / curl requests + packet capture</text>
   <path d="M690 685V650H745V640" class="dash"/>
   <path d="M910 685V645H1380V640" class="dash"/>
-  <text x="1160" y="700" class="s bold purple">Transport / basket + Trivy JSON → SIEMs</text>
+  <text x="1160" y="700" class="s bold purple">Web / Trivy / artifact JSON → SIEMs</text>
 
 
   <!-- A03 local assessment on WEB01, not an additional VM -->
@@ -201,14 +201,35 @@
   <text x="1080" y="1217" class="s">SMTP DNS failure diagnosed; later receipt operator-reported</text>
   <path d="M520 1181H555M1030 1181H1065" class="arrow"/>
 
-  <g transform="translate(0 380)">
+  <!-- A08 signed-artifact control validation -->
+  <rect x="25" y="1280" width="1550" height="160" class="section" stroke="#168444"/>
+  <text x="45" y="1307" class="h green">A08 • Software or Data Integrity Failures — Signed Artifact Verification</text>
+  <text x="1550" y="1307" text-anchor="end" class="s bold green">SEPARATE LAB STAGING CONTROL</text>
+  <rect x="45" y="1323" width="475" height="96" rx="6" fill="#f3eaff" stroke="#7c3cc4"/>
+  <text x="60" y="1344" class="t bold purple">KALI: approved release + detached signature</text>
+  <text x="60" y="1365" class="t">OpenSSL RSA-3072 / SHA-256 • private key stays on Kali</text>
+  <text x="60" y="1386" class="t">SCP transfer • artifact and public-key hashes compared</text>
+  <text x="60" y="1407" class="s">Modified copy tested with the original signature</text>
+  <rect x="555" y="1323" width="475" height="96" rx="6" fill="#e8f7f8" stroke="#087f8c"/>
+  <text x="570" y="1344" class="t bold teal">WEB01: pinned key + verification gate</text>
+  <text x="570" y="1365" class="t">Verify candidate bytes before atomic lab staging</text>
+  <text x="570" y="1386" class="t">Modified input BLOCKED • approved hash unchanged</text>
+  <text x="570" y="1407" class="s">JSONL audit: outcome, reason, run ID and artifact hashes</text>
+  <rect x="1065" y="1323" width="490" height="96" rx="6" fill="#ecf9f0" stroke="#168444"/>
+  <text x="1080" y="1344" class="t bold green">SIEM: blocked-artifact alert + recovery</text>
+  <text x="1080" y="1365" class="t">Wazuh 86600 → 119996 → 119997 / level 10</text>
+  <text x="1080" y="1386" class="t">Splunk a08:integrity • scheduled alert + contextual email</text>
+  <text x="1080" y="1407" class="s">Live alert/email/recovery operator-confirmed; images pending</text>
+  <path d="M520 1371H555M1030 1371H1065" class="arrow"/>
+
+  <g transform="translate(0 570)">
 
   <!-- Web detection workflow -->
   <rect x="25" y="900" width="1550" height="115" class="section" stroke="#c51d65" stroke-dasharray="5 3"/>
   <text x="45" y="927" class="h pink">OWASP Validation and SOC Detection Workflow</text>
-  <g transform="translate(45 948)"><rect width="220" height="47" rx="6" fill="#f3eaff" stroke="#7c3cc4"/><text x="110" y="19" text-anchor="middle" class="t bold">Controlled test</text><text x="110" y="36" text-anchor="middle" class="s">Kali HTTP test or WEB01 Trivy scan</text></g>
-  <g transform="translate(315 948)"><rect width="220" height="47" rx="6" fill="#e8f7f8" stroke="#087f8c"/><text x="110" y="19" text-anchor="middle" class="t bold">Application / image</text><text x="110" y="36" text-anchor="middle" class="s">Juice Shop + dependency inventory</text></g>
-  <g transform="translate(585 948)"><rect width="220" height="47" rx="6" fill="#fff7e5" stroke="#d68a00"/><text x="110" y="19" text-anchor="middle" class="t bold">Security telemetry</text><text x="110" y="36" text-anchor="middle" class="s">Transport + dependency JSON</text></g>
+  <g transform="translate(45 948)"><rect width="220" height="47" rx="6" fill="#f3eaff" stroke="#7c3cc4"/><text x="110" y="19" text-anchor="middle" class="t bold">Controlled test</text><text x="110" y="36" text-anchor="middle" class="s">Web / Trivy / signed-artifact test</text></g>
+  <g transform="translate(315 948)"><rect width="220" height="47" rx="6" fill="#e8f7f8" stroke="#087f8c"/><text x="110" y="19" text-anchor="middle" class="t bold">Application / image</text><text x="110" y="36" text-anchor="middle" class="s">Juice Shop / image / lab artifact</text></g>
+  <g transform="translate(585 948)"><rect width="220" height="47" rx="6" fill="#fff7e5" stroke="#d68a00"/><text x="110" y="19" text-anchor="middle" class="t bold">Security telemetry</text><text x="110" y="36" text-anchor="middle" class="s">Web + dependency + integrity JSON</text></g>
   <g transform="translate(855 948)"><rect width="220" height="47" rx="6" fill="#ecf9f0" stroke="#168444"/><text x="110" y="19" text-anchor="middle" class="t bold">SIEM detection</text><text x="110" y="36" text-anchor="middle" class="s">Wazuh rule + Splunk SPL</text></g>
   <g transform="translate(1125 948)"><rect width="220" height="47" rx="6" fill="#fff0f6" stroke="#c51d65"/><text x="110" y="19" text-anchor="middle" class="t bold">SOC notification</text><text x="110" y="36" text-anchor="middle" class="s">Triggered alert + email</text></g>
   <path d="M265 971H315M535 971H585M805 971H855M1075 971H1125" class="arrow"/>
@@ -223,15 +244,13 @@
 
   <rect x="795" y="1040" width="780" height="145" class="section" stroke="#087f8c"/>
   <text x="815" y="1068" class="h teal">OWASP Web + Software Supply Chain Validation</text>
-  <text x="815" y="1093" class="t">A01/A02 • A03 • A04 • A05 • A06 Basket Rules • A07</text>
-  <text x="815" y="1116" class="t">A06: quantity-aware JSON + negative-submission detection</text>
-  <text x="815" y="1142" class="s">A06 completed per operator; validation open | A04 HTTPS open</text>
-  <rect x="815" y="1155" width="315" height="20" class="badge" fill="#e8f7f8"/><text x="972" y="1169" text-anchor="middle" class="s bold teal">WEB + DEPENDENCY SECURITY MONITORING</text>
+  <text x="815" y="1093" class="t">A01/A02 • A03 • A04 • A05 • A06 • A07 • A08</text>
+  <text x="815" y="1116" class="t">A08: signature gate + hash preservation + dual-SIEM alerts</text>
+  <text x="815" y="1142" class="s">A09/A10 planned • A04 HTTPS and A06 validation remain open</text>
+  <rect x="815" y="1155" width="315" height="20" class="badge" fill="#e8f7f8"/><text x="972" y="1169" text-anchor="middle" class="s bold teal">WEB + DEPENDENCY + ARTIFACT MONITORING</text>
 
   <rect x="25" y="1210" width="1550" height="30" rx="6" fill="#f7f9fc" stroke="#a7b3c5"/>
   <text x="40" y="1230" class="s"><tspan class="bold">Status:</tspan> Operational • Isolated and authorized testing only • No WAN exposure</text>
   <text x="1560" y="1230" text-anchor="end" class="s">Updated 25 November 2026</text>
   </g>
 </svg>
-
-

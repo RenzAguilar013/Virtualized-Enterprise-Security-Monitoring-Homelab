@@ -1,0 +1,53 @@
+# OWASP A08:2025 — Software or Data Integrity Failures
+# Paste ONE search into the Splunk WEBSITE > Search & Reporting search box.
+# These are SPL searches, not Linux terminal commands.
+# Index: web; sourcetype: a08:integrity; KV_MODE=json already extracts fields.
+# _time is receipt time (DATETIME_CONFIG=CURRENT); timestamp is event time in UTC.
+
+# 1. Parsed verification telemetry — Screenshot 03
+index=web sourcetype="a08:integrity" earliest=-24h latest=now
+integration="a08_integrity" event_type="artifact_verification"
+| table _time timestamp asset artifact verification_result deployment_action reason run_id
+| sort 0 -_time
+
+# 2. Scheduled alert: OWASP A08 - Artifact Verification Blocked
+# Cron * * * * *; earliest -5m; latest now; results > 0; For each result.
+# Suppression: 5 minutes, fields asset,artifact,run_id.
+# Actions: Add to Triggered Alerts (High), Send Email (message + inline table).
+index=web sourcetype="a08:integrity" earliest=-5m latest=now
+integration="a08_integrity" event_type="artifact_verification"
+deployment_action="blocked"
+| dedup asset run_id
+| eval staging_unchanged=if(active_sha256_before=active_sha256_after,"yes","no")
+| table timestamp asset artifact run_id verification_result deployment_action reason staging_unchanged
+
+# 3. Investigate one real run — replace REPLACE_WITH_RUN_ID
+index=web sourcetype="a08:integrity" earliest=-24h latest=now
+integration="a08_integrity" run_id="REPLACE_WITH_RUN_ID"
+| table timestamp asset artifact run_id verification_result deployment_action reason candidate_sha256 active_sha256_before active_sha256_after staged_content_changed
+
+# 4. Latest known-good recovery — Screenshot 08
+index=web sourcetype="a08:integrity" earliest=-15m latest=now
+integration="a08_integrity" verification_result="passed" deployment_action="staged"
+| sort 0 -_time
+| head 1
+| table timestamp asset artifact verification_result deployment_action staged_content_changed run_id
+
+# 5. Unexpected change during a blocked attempt — investigation check
+index=web sourcetype="a08:integrity" earliest=-24h latest=now
+integration="a08_integrity" deployment_action="blocked"
+| where active_sha256_before!=active_sha256_after
+| table timestamp asset artifact reason run_id active_sha256_before active_sha256_after
+
+# 6. Scheduler diagnostic — shows search execution and selected actions, not inbox delivery
+index=_internal source="*scheduler.log" earliest=-30m latest=now
+savedsearch_name="OWASP A08 - Artifact Verification Blocked"
+| table _time savedsearch_name status result_count alert_actions
+| sort 0 -_time
+
+# 7. Email-action diagnostic — inspect any transport/DNS/authentication error
+index=_internal earliest=-30m latest=now
+(source="*python.log" OR source="*splunkd.log")
+("OWASP A08 - Artifact Verification Blocked" OR "sendemail")
+| table _time source _raw
+| sort 0 -_time

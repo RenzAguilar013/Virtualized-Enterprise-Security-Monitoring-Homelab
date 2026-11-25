@@ -1,158 +1,70 @@
 # Repository Structure
 
-The following is the current documentation layout for the homelab, including
-A03 supply-chain assessment, A04 transport validation, A06 basket rules and the existing web exercises. Existing exercises and evidence stay in their original folders.
-Screenshot collections are collapsed for readability.
+Updated 25 November 2026. Existing folders and screenshot uploads are retained.
+Tables collapse image collections while listing the exact activity directories.
 
-```text
-Virtualized-Enterprise-Security-Monitoring-Homelab/
-    README.md
-    assets/
-        topology.png
-        topology.svg
-    docs/
-        architecture.md
-        repository-structure.md
-        active-directory.md
-        auditd-configuration.md
-        firewall-policies.md
-        fortigate-configuration.md
-        splunk-configuration.md
-        sysmon-telemetry.md
-        vmware-network.md
-        wazuh-configuration.md
-        web-application-security-lab.md
-        windows-client.md
-    screenshots/
-        existing platform and infrastructure evidence
-    tests/
-        T1021-002-smb-windows-admin-shares/
-        T1046-network-service-discovery/
-        T1053-005-windows-scheduled-task/
-        T1059-001-powershell-execution-validation/
-        T1070-004-windows-file-deletion/
-        T1087-002-domain-account-discovery/
-        T1110-ssh-password-guessing/
-        T1543-003-windows-service-creation/
-        T1547-001-registry-run-keys/
-        T1562-001-impair-defenses/
-        owasp-top-10-2025/
-            README.md
-            shared-config/
-                nginx-juice-shop.conf
-                splunk-forwarder-inputs.conf
-                wazuh-agent-localfile.xml
-            A01-A02-exposed-resources/
-                existing report, queries, rules and screenshots
-            A03-software-supply-chain/
-                OWASP-A03-Software-Supply-Chain-Validation.md
-                splunk-searches.spl
-                wazuh-queries.txt
-                wazuh-rules.xml
-                screenshots/
-                    README.md
-            A04-cryptographic-failures/
-                OWASP-A04-Cryptographic-Failures-Validation.md
-                splunk-searches.spl
-                wazuh-queries.txt
-                wazuh-rules.xml
-                screenshots/
-                    README.md
-                    02-a04-kali-http-https-transport-check.png
-                    12-a04-wazuh-http-login-rule-logtest.png
-                    20-a04-recovery-validation.png
-            A05-injection/
-                OWASP-A05-SQL-Injection-Validation.md
-                burp-test-cases.md
-                splunk-searches.spl
-                wazuh-queries.txt
-                screenshots/
-                    README.md
-                    12 evidence screenshots
-            A06-insecure-design/
-                OWASP-A06-Insecure-Design-Validation.md
-                splunk-searches.spl
-                wazuh-queries.txt
-                wazuh-rules.xml
-                screenshots/
-                    README.md
-                    03-a06-splunk-basket-telemetry.png
-                    06a-a06-scheduler-email-action-diagnostic.png
-            A07-authentication-failures/
-                existing report, queries, rules and screenshots
-```
+## Repository root
 
-## A05 uploaded evidence
+| Path | Contents |
+|---|---|
+| `README.md` | Project overview, capabilities, activity links and completion status |
+| `assets/topology.png` | Updated rendered network and validation topology |
+| `assets/topology.svg` | Editable source retaining the existing card design |
+| `docs/` | Architecture, platform guides and this repository layout |
+| `screenshots/` | Existing platform and infrastructure evidence |
+| `tests/` | MITRE ATT&CK / NIST CSF and OWASP exercises |
 
-The A05 screenshot directory contains the following reviewed PNGs:
+## Test directories
 
-- `01-a05-web01-search-baseline.png`
-- `02-a05-burp-normal-search.png`
-- `03-burp-single-quote-response.png`
-- `04-burp-boolean-true.png`
-- `05-burp-boolean-false.png`
-- `06-nginx-search-test-timeline.png`
-- `07-splunk-search-test-timeline.png`
-- `08-splunk-triggered-alert.png`
-- `09-email-notification.png`
-- `10-wazuh-sql-injection-alert.png`
-- `11-recovery-validation.png`
-- `11-wazuh-logtest-before-custom-rule.png`
+| Directory | Contents |
+|---|---|
+| `tests/T1021-002-smb-windows-admin-shares/` | Existing validation report, queries and evidence |
+| `tests/T1046-network-service-discovery/` | Existing validation report, queries and evidence |
+| `tests/T1053-005-windows-scheduled-task/` | Existing validation report, queries and evidence |
+| `tests/T1059-001-powershell-execution-validation/` | Existing validation report, queries and evidence |
+| `tests/T1070-004-windows-file-deletion/` | Existing validation report, queries and evidence |
+| `tests/T1087-002-domain-account-discovery/` | Existing validation report, queries and evidence |
+| `tests/T1110-ssh-password-guessing/` | Existing validation report, queries and evidence |
+| `tests/T1543-003-windows-service-creation/` | Existing validation report, queries and evidence |
+| `tests/T1547-001-registry-run-keys/` | Existing validation report, queries and evidence |
+| `tests/T1562-001-impair-defenses/` | Existing validation report, queries and evidence |
+| `tests/owasp-top-10-2025/` | OWASP progress index, shared configuration and activity folders |
 
-See the [screenshot manifest](../tests/owasp-top-10-2025/A05-injection/screenshots/README.md) for results and
-redaction requirements for screenshots 03, 04, and 06.
+## OWASP activity directories
 
-## A05 completion
+| Directory | Report | Uploaded PNG files |
+|---|---|---:|
+| `tests/owasp-top-10-2025/A01-A02-exposed-resources/` | [OWASP-A01-A02-Exposed-Resources-Validation.md](../tests/owasp-top-10-2025/A01-A02-exposed-resources/OWASP-A01-A02-Exposed-Resources-Validation.md) | 41 |
+| `tests/owasp-top-10-2025/A03-software-supply-chain/` | [OWASP-A03-Software-Supply-Chain-Validation.md](../tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md) | 24 |
+| `tests/owasp-top-10-2025/A04-cryptographic-failures/` | [OWASP-A04-Cryptographic-Failures-Validation.md](../tests/owasp-top-10-2025/A04-cryptographic-failures/OWASP-A04-Cryptographic-Failures-Validation.md) | 20 |
+| `tests/owasp-top-10-2025/A05-injection/` | [OWASP-A05-SQL-Injection-Validation.md](../tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md) | 12 |
+| `tests/owasp-top-10-2025/A06-insecure-design/` | [OWASP-A06-Insecure-Design-Validation.md](../tests/owasp-top-10-2025/A06-insecure-design/OWASP-A06-Insecure-Design-Validation.md) | 9 |
+| `tests/owasp-top-10-2025/A07-authentication-failures/` | [OWASP-A07-Authentication-Failures-Validation.md](../tests/owasp-top-10-2025/A07-authentication-failures/OWASP-A07-Authentication-Failures-Validation.md) | 15 |
+| `tests/owasp-top-10-2025/A08-software-data-integrity/` | [OWASP-A08-Software-Data-Integrity-Validation.md](../tests/owasp-top-10-2025/A08-software-data-integrity/OWASP-A08-Software-Data-Integrity-Validation.md) | 0 |
 
-The controlled Boolean response comparison, Nginx/Splunk timeline, scheduled
-alert, email delivery, Wazuh single-quote detection and application recovery
-are documented. The report records the Boolean Wazuh coverage gap and limits
-of the post-test service-health capture. No custom Wazuh rule or application
-remediation is claimed.
+## A08 exact five-entry layout
 
-## A03 evidence and completion
+Folder: `tests/owasp-top-10-2025/A08-software-data-integrity/`
 
-The [A03 report](../tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md)
-documents the assessment, selected advisory review, Splunk and Wazuh detection
-outcomes, scheduled alert settings and recovery status.
+| Entry | Purpose |
+|---|---|
+| [OWASP-A08-Software-Data-Integrity-Validation.md](../tests/owasp-top-10-2025/A08-software-data-integrity/OWASP-A08-Software-Data-Integrity-Validation.md) | Full validation report, embedded gate/configuration, email message, troubleshooting and recovery |
+| [splunk-searches.spl](../tests/owasp-top-10-2025/A08-software-data-integrity/splunk-searches.spl) | Telemetry, scheduled detection, run correlation, recovery and diagnostics |
+| [wazuh-queries.txt](../tests/owasp-top-10-2025/A08-software-data-integrity/wazuh-queries.txt) | Threat Hunting filters and correlation guidance |
+| [wazuh-rules.xml](../tests/owasp-top-10-2025/A08-software-data-integrity/wazuh-rules.xml) | Corrected parent 119996 and blocked-artifact rule 119997 |
+| [screenshots/](../tests/owasp-top-10-2025/A08-software-data-integrity/screenshots/README.md) | Eight-capture naming checklist; actual A08 images pending upload |
 
-The folder uses the same structure as A01/A02 and A07: a validation report,
-Splunk searches, Wazuh queries, Wazuh rules and a screenshots folder.
-The query/rule files are published beside the report.
+The report contains the gate source and host configuration so the activity does
+not require separate scripts/config directories. Private signing keys are not
+published. The operator reported completion; supplied text results and pending
+image evidence are distinguished in the report and screenshot checklist.
 
-The [screenshot checklist](../tests/owasp-top-10-2025/A03-software-supply-chain/screenshots/README.md)
-distinguishes reviewed captures from operator-confirmed outcomes and remaining
-uploads. The A03 source captures, including final recovery images, have since been uploaded.
-Original scan-export availability and final recovery outcome review remain tracked in A03.
+## Evidence and progress
 
+A06 now contains its eight core images plus the scheduler diagnostic; earlier
+statements about missing uploads describe its previous publication checkpoint.
+Detailed image review remains separately tracked. A08 has the five entries
+above and no fabricated screenshot placeholders. Upload the actual eight PNGs
+using the names in its screenshot checklist. A09 and A10 remain planned.
 
-## A04 structure and evidence
-
-The [A04 activity](../tests/owasp-top-10-2025/A04-cryptographic-failures/OWASP-A04-Cryptographic-Failures-Validation.md)
-uses exactly the same five-entry layout as the earlier OWASP folders: validation
-report, Splunk searches, Wazuh queries, Wazuh rules and screenshots.
-
-The original three key captures and later operator uploads are available. The
-selected packet, live-alert, trigger and received-email evidence has now been
-reviewed; the screenshot checklist identifies a concise portfolio selection. Configuration and the complete email message are
-embedded in the report, so no extra config or script folders are required.
-
-A04 transport checks, the JSON rule match and operational recovery were reviewed.
-HTTPS enforcement remains an open finding. The remaining unfinished categories
-are A08, A09 and A10; A03 retains its separately tracked recovery review.
-
-
-## A06 structure and evidence
-
-The [A06 activity](../tests/owasp-top-10-2025/A06-insecure-design/OWASP-A06-Insecure-Design-Validation.md)
-uses the established five-entry layout: validation report, Splunk searches,
-Wazuh queries, Wazuh rules and screenshots. Configuration snapshots and the
-email subject/message are embedded in the report rather than extra setup folders.
-
-Two supplied images are published: JSON telemetry and a supplemental scheduler
-email-action diagnostic. The eight-capture checklist identifies the core
-portfolio images still to upload. The operator reported activity completion;
-direct image review and reported outcomes remain distinguished.
-
-The negative basket state and restoration were operator-confirmed. Quantity
-validation remains open; no checkout or application remediation is claimed.
+[OWASP program and status](../tests/owasp-top-10-2025/README.md)
