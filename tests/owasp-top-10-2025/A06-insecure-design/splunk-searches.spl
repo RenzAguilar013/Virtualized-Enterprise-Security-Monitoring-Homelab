@@ -1,0 +1,62 @@
+/* Run each block separately, without its comment label.
+   Historical investigations use the time picker: 25 November 2026 or All time.
+   KV_MODE=json is configured; omit redundant spath. No URL marker is required. */
+
+/* 1. Actual basket JSON ingestion and extracted fields (Screenshot 03). */
+index=web sourcetype="nginx:a06:json" integration="a06_basket"
+| table _time asset src_ip method uri requested_quantity status
+| sort 0 -_time
+
+/* 2. Negative-quantity investigation. Inspect the response and actual basket state separately. */
+index=web sourcetype="nginx:a06:json" integration="a06_basket"
+method="PUT" uri="/api/BasketItems/*"
+| eval quantity=tonumber(requested_quantity)
+| where quantity<0
+| table _time timestamp asset src_ip method uri quantity status request_uri
+| sort 0 -_time
+
+/* 3. Scheduled alert: every minute, -5m to now; number of results > 0; per result.
+   Intended suppression: 5 minutes by asset,src_ip,uri,quantity.
+   Enable Add to Triggered Alerts (High) and Send Email, including the report's message and inline table. */
+index=web sourcetype="nginx:a06:json" earliest=-5m latest=now
+integration="a06_basket" method="PUT" uri="/api/BasketItems/*"
+| eval quantity=tonumber(requested_quantity)
+| where quantity<0
+| stats count AS attempts
+    values(status) AS http_statuses
+    earliest(_time) AS first_seen
+    latest(_time) AS last_seen
+    BY asset src_ip uri quantity
+| eval severity="high",
+    detection="OWASP A06 - Negative Basket Quantity Submission"
+| convert ctime(first_seen) ctime(last_seen)
+| table detection severity asset src_ip uri quantity attempts http_statuses first_seen last_seen
+
+/* 4. Recovery investigation. Use the actual item ID and relevant time picker.
+   Verify the newest restoration record and refreshed basket; older quantity-1 controls are not final-recovery proof. */
+index=web sourcetype="nginx:a06:json"
+integration="a06_basket" method="PUT"
+uri="/api/BasketItems/9" src_ip="10.10.10.40"
+| table _time asset src_ip uri requested_quantity status
+| sort 0 -_time
+| head 5
+
+/* 5. Event-boundary diagnostic for the separate JSON source. Expect at most one integration marker per event. */
+index=web sourcetype="nginx:a06:json"
+source="/var/log/nginx/juice-shop-a06-basket.log"
+| rex field=_raw max_match=0 "\"integration\"\s*:\s*\"(?<record_marker>a06_basket)\""
+| eval records_in_event=coalesce(mvcount(record_marker),0)
+| stats count AS indexed_events sum(records_in_event) AS basket_records max(records_in_event) AS most_records_in_one_event BY source
+
+/* 6. Scheduled-search diagnostic. Success/result_count establish matching runs; email indicates action selection, not confirmed delivery. */
+index=_internal source="*scheduler.log" earliest=-30m latest=now
+savedsearch_name="*A06*"
+| table _time savedsearch_name status result_count alert_actions
+| sort 0 -_time
+
+/* 7. Email-action diagnostic. Keep personal recipient addresses out of public exports. */
+index=_internal earliest=-30m latest=now
+(sendemail OR "SMTP" OR "sendmodalert")
+| table _time source _raw
+| sort 0 -_time
+| head 10

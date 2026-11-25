@@ -1,0 +1,23 @@
+# Wazuh Threat Hunting / Events. Select the test time range (25 November 2026 for this run).
+
+# 1. Live A06 negative-quantity alerts
+rule.id: "119995" AND data.asset: "WEB01"
+
+# 2. Kali source and the tested basket item
+rule.id: "119995" AND data.src_ip: "10.10.10.40" AND data.uri: "/api/BasketItems/9"
+
+# 3. Submitted quantity -1
+rule.id: "119995" AND data.requested_quantity: "-1"
+
+# 4. Negative submission with a successful HTTP response: investigate actual persistence separately
+rule.id: "119995" AND data.asset: "WEB01" AND data.status: "200"
+
+# 5. Source-file confirmation
+rule.id: "119995" AND location: "/var/log/nginx/juice-shop-a06-basket.log"
+
+# 6. Rejected unauthenticated submissions, if a negative test is deliberately sent without a valid session
+rule.id: "119995" AND data.status: "401"
+
+# Parent rule 119994 is level 0 and is not expected in the normal alert index.
+# Use wazuh-logtest with one complete JSON line for decoder/rule verification.
+# Quantity 1 does not satisfy the negative rule. A submission alert does not prove persistence or financial impact.

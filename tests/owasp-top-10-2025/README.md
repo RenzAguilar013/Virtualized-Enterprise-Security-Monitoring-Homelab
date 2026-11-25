@@ -9,9 +9,9 @@ This directory tracks authorized web application security exercises performed ag
 | A01:2025 Broken Access Control | Unauthenticated access to exposed `/ftp/` resources | Completed |
 | A02:2025 Security Misconfiguration | Directory listing and exposed document access | Completed |
 | A03:2025 Software Supply Chain Failures | Container/SBOM assessment, advisory triage and dual-SIEM scanner-finding alerts | Assessment and alert workflow completed (operator-confirmed); final recovery images uploaded; outcome review pending |
-| A04:2025 Cryptographic Failures | HTTP authentication transport, scheme-aware JSON logging and dual-SIEM detection | Transport finding, rule match and recovery reviewed; live alert/email captures awaiting upload; HTTPS remediation open |
+| A04:2025 Cryptographic Failures | HTTP authentication transport, scheme-aware JSON logging and dual-SIEM detection | Transport finding, live Wazuh/Splunk alerts, email and recovery reviewed; saved-mode caveat documented; HTTPS remediation open |
 | A05:2025 Injection | Product-search SQL injection and SIEM detection review | Completed; evidence reviewed, limitations documented |
-| A06:2025 Insecure Design | Business-logic and abuse-case analysis | Planned |
+| A06:2025 Insecure Design | Own-basket quantity rule, negative-submission detection and notification validation | Completed per operator report; ingestion/scheduler evidence reviewed; remaining key captures pending; server validation open |
 | A07:2025 Authentication Failures | Login and rate-limit validation | Completed |
 | A08:2025 Software or Data Integrity Failures | Image and deployment integrity validation | Planned |
 | A09:2025 Security Logging and Alerting Failures | Detection coverage and logging-gap analysis | Planned |
@@ -41,10 +41,22 @@ This directory tracks authorized web application security exercises performed ag
   documents HTTP/HTTPS checks, fictional login traffic, Nginx transport JSON,
   Wazuh rule `119991`, Splunk searches and scheduled alert/email settings.
 - Reviewed captures establish the HTTP/HTTPS behavior, JSON rule match and
-  successful application/telemetry recovery. Live alert and notification images
-  remain to be supplied; the screenshot checklist lists only important additions.
+  successful application/telemetry recovery. Later uploads now verify the packet
+  capture, live Wazuh alert, scheduled Splunk trigger and received email. The report
+  records the uploaded Digest mode versus guided per-result configuration.
 - HTTPS enforcement remains open. This exercise did not assess every A04 control
   or apply a TLS remediation.
+
+## A06 basket business-rule assessment
+
+- [A06 Insecure Design](A06-insecure-design/OWASP-A06-Insecure-Design-Validation.md)
+  documents the positive-quantity invariant, own-account negative update and
+  restoration, Nginx quantity metadata, Wazuh rule `119995`, Splunk searches,
+  contextual email action and SMTP/DNS troubleshooting.
+- The operator reported completion. Directly supplied captures verify JSON
+  ingestion and matching scheduled runs/email-action selection. The core
+  finding/live-alert/inbox/final-recovery images remain to upload.
+- Restoring quantity `1` is cleanup. Server-side validation remediation remains open.
 
 ## Shared configuration
 
@@ -53,4 +65,5 @@ The `shared-config/` directory contains the WEB01 Nginx, Splunk Universal Forwar
 ## Evidence standard
 
 Every activity should document scope, authorization, baseline, request and response evidence, server telemetry, Wazuh detection, Splunk investigation, alerting, remediation, cleanup, and retest results. Do not publish credentials, tokens, cookies, private email addresses, or unnecessary confidential-looking content.
+
 

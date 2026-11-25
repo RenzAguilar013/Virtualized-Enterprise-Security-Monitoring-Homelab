@@ -1,7 +1,7 @@
 # Repository Structure
 
 The following is the current documentation layout for the homelab, including
-A03 supply-chain assessment, A04 transport validation and the existing web exercises. Existing exercises and evidence stay in their original folders.
+A03 supply-chain assessment, A04 transport validation, A06 basket rules and the existing web exercises. Existing exercises and evidence stay in their original folders.
 Screenshot collections are collapsed for readability.
 
 ```text
@@ -69,6 +69,15 @@ Virtualized-Enterprise-Security-Monitoring-Homelab/
                 screenshots/
                     README.md
                     12 evidence screenshots
+            A06-insecure-design/
+                OWASP-A06-Insecure-Design-Validation.md
+                splunk-searches.spl
+                wazuh-queries.txt
+                wazuh-rules.xml
+                screenshots/
+                    README.md
+                    03-a06-splunk-basket-telemetry.png
+                    06a-a06-scheduler-email-action-diagnostic.png
             A07-authentication-failures/
                 existing report, queries, rules and screenshots
 ```
@@ -123,11 +132,27 @@ The [A04 activity](../tests/owasp-top-10-2025/A04-cryptographic-failures/OWASP-A
 uses exactly the same five-entry layout as the earlier OWASP folders: validation
 report, Splunk searches, Wazuh queries, Wazuh rules and screenshots.
 
-Three supplied key captures are published. The screenshot checklist identifies
-important packet/live-alert/notification images still to upload; setup captures
-are intentionally omitted. Configuration and the complete email message are
+The original three key captures and later operator uploads are available. The
+selected packet, live-alert, trigger and received-email evidence has now been
+reviewed; the screenshot checklist identifies a concise portfolio selection. Configuration and the complete email message are
 embedded in the report, so no extra config or script folders are required.
 
 A04 transport checks, the JSON rule match and operational recovery were reviewed.
 HTTPS enforcement remains an open finding. The remaining unfinished categories
-are A06, A08, A09 and A10; A03 retains its separately tracked recovery review.
+are A08, A09 and A10; A03 retains its separately tracked recovery review.
+
+
+## A06 structure and evidence
+
+The [A06 activity](../tests/owasp-top-10-2025/A06-insecure-design/OWASP-A06-Insecure-Design-Validation.md)
+uses the established five-entry layout: validation report, Splunk searches,
+Wazuh queries, Wazuh rules and screenshots. Configuration snapshots and the
+email subject/message are embedded in the report rather than extra setup folders.
+
+Two supplied images are published: JSON telemetry and a supplemental scheduler
+email-action diagnostic. The eight-capture checklist identifies the core
+portfolio images still to upload. The operator reported activity completion;
+direct image review and reported outcomes remain distinguished.
+
+The negative basket state and restoration were operator-confirmed. Quantity
+validation remains open; no checkout or application remediation is claimed.

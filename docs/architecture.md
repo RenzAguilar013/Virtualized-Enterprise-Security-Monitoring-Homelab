@@ -48,3 +48,27 @@ HTTPS remains an open remediation item; no new VM or TLS endpoint was added.
 
 See the [A04 report](../tests/owasp-top-10-2025/A04-cryptographic-failures/OWASP-A04-Cryptographic-Failures-Validation.md)
 for configuration snapshots, evidence status and recovery results.
+
+
+## A06 basket quantity flow
+
+Kali sends an authenticated PUT for the operator's own basket item. Nginx logs
+only matching basket-update requests to a separate JSON file, extracting the
+integer quantity used in this lab and retaining response status. The emitted
+record excludes authentication headers, cookies and full request bodies.
+
+| Component | A06 function |
+|---|---|
+| Kali | Normal/negative update comparison and restoration to quantity 1 |
+| WEB01 | `juice-shop-a06-basket.log`, integration `a06_basket` |
+| Wazuh | Parent `119994`, negative-submission rule `119995`, level 10 |
+| Splunk | Index `web`, sourcetype `nginx:a06:json`, minutely scheduled alert and email |
+
+The detection flags a submitted negative integer; response status and persisted
+basket state remain separate investigation evidence. Scheduler/email-action
+execution was reviewed, an SMTP hostname-resolution failure was diagnosed,
+and a later notification was operator-reported. No new VM was added.
+
+See the [A06 report](../tests/owasp-top-10-2025/A06-insecure-design/OWASP-A06-Insecure-Design-Validation.md)
+for configuration snapshots and evidence status. The basket was restored per
+operator confirmation; the server-side quantity-validation finding remains open.

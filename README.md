@@ -17,7 +17,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | Kali Linux | `10.10.10.40` | Nmap, Wireshark, Nessus, Hydra and validation tooling |
 | Linux01 | `10.10.10.50` | Ubuntu telemetry host, auditd, FortiGate syslog receiver, Wazuh agent, Splunk Universal Forwarder and controlled agent-health validation |
 | Splunk Enterprise | `10.10.10.60` | Central search, dashboards, scheduled alerts and SMTP email actions |
-| WEB01 | `10.10.10.70` | Ubuntu web-security target with Nginx, Docker, OWASP Juice Shop, Wazuh Agent, Splunk Universal Forwarder and Trivy image/dependency assessment and scheme-aware authentication telemetry |
+| WEB01 | `10.10.10.70` | Ubuntu web-security target with Nginx, Docker, OWASP Juice Shop, Wazuh Agent, Splunk Universal Forwarder and Trivy dependency assessment, authentication-transport and basket-quantity telemetry |
 
 ### Network design
 
@@ -51,6 +51,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Dedicated WEB01 Nginx access/error telemetry forwarded to Wazuh and the Splunk `web` index
 - Trivy findings normalized to JSON Lines, collected by Wazuh and Splunk with scan identifiers
 - Separate Nginx JSON transport log with scheme, port, method, URI, status and validation markers
+- Quantity-aware basket-update JSON collected by Wazuh and Splunk, excluding tokens and full request bodies
 
 ### Detection and investigation
 
@@ -77,6 +78,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Custom Wazuh Critical/High scanner-finding rules and Splunk alert/email validation
 - HTTP authentication-transport assessment from Kali using Burp, curl and a scoped packet capture
 - Wazuh rule `119991` for unencrypted login POSTs and Splunk transport-aware alert/email configuration
+- A06 own-basket business-rule testing, Wazuh negative-quantity rule `119995` and scheduled Splunk detection
+- SMTP notification troubleshooting through scheduler and email-action logs
 - Source IP, destination IP, user, host, port, URI, HTTP status and timeline correlation
 
 ## Detection engineering and validation
@@ -102,6 +105,8 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 - Corrected Splunk event splitting and removed redundant JSON extraction from the final queries
 - Reviewed A04 JSON logtest evidence matching Wazuh rule `119991` at level `10`
 - Verified A04 recovery: healthy WEB01 services, loopback-only container, HTTP 200 and fresh Splunk collection
+- Reviewed A06 quantity extraction and scheduled searches with matching results and email-action selection
+- Diagnosed a temporary SMTP hostname-resolution failure during A06 notification validation
 - Built Splunk investigations, dashboards, scheduled alerts and email notifications
 - Documented cleanup, containment, recovery and lessons learned
 
@@ -128,6 +133,7 @@ The environment simulates SOC monitoring, centralized telemetry, firewall admini
 | [Container and dependency assessment](tests/owasp-top-10-2025/A03-software-supply-chain/OWASP-A03-Software-Supply-Chain-Validation.md) | **A03:2025 Software Supply Chain Failures** | Trivy 0.76.2, CycloneDX SBOM, 592 components, 119 package findings / 93 advisories, applicability triage, custom Wazuh severity rules, Splunk ingestion and user-confirmed alert/email workflow |
 | [HTTP authentication transport assessment](tests/owasp-top-10-2025/A04-cryptographic-failures/OWASP-A04-Cryptographic-Failures-Validation.md) | **A04:2025 Cryptographic Failures** | HTTP/HTTPS checks, scheme-aware JSON telemetry, Wazuh rule `119991`, Splunk alert/email configuration and reviewed recovery; HTTPS enforcement remains open |
 | [Product-search SQL injection](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md) | **A05:2025 Injection** | Completed: Boolean response comparison, Nginx/Splunk timeline, triggered alert and email, Wazuh rule `31164`, and recovery evidence |
+| [Basket business-rule assessment](tests/owasp-top-10-2025/A06-insecure-design/OWASP-A06-Insecure-Design-Validation.md) | **A06:2025 Insecure Design** | Own-basket negative-quantity test and restoration (operator-confirmed), quantity-aware Nginx JSON, Wazuh `119995`, reviewed Splunk ingestion/scheduler evidence, notification troubleshooting; server validation remains open |
 | [Authentication failure and rate-limit validation](tests/owasp-top-10-2025/A07-authentication-failures/OWASP-A07-Authentication-Failures-Validation.md) | **A07:2025 Authentication Failures** | Controlled HTTP `401` sequence, immediate post-failure `200`, Nginx, Wazuh rules `119972`/`119973`, Splunk threshold alert and SMTP notification |
 
 ### A03 container and dependency assessment
@@ -165,7 +171,9 @@ port, method, URI and status for Wazuh and Splunk.
 The reviewed JSON event matched Wazuh rule `119991`, level `10`. The configured
 Splunk alert runs every minute, groups matching HTTP login POSTs by source and
 validation ID, and includes a contextual email message and inline results.
-Live-alert and received-email images remain to be uploaded for review.
+Subsequent uploads now verify the cleartext packet, live Wazuh alert, scheduled
+Splunk trigger and received email. The trigger listing shows Digest mode; the
+report distinguishes it from the guided per-result setting.
 
 Recovery evidence confirms active application/agent services, the running
 forwarder, Juice Shop's loopback binding, HTTP 200 with three products and a
@@ -192,7 +200,37 @@ capture does not establish every service's status or the post-test port binding.
 See the [A05 report](tests/owasp-top-10-2025/A05-injection/OWASP-A05-SQL-Injection-Validation.md)
 for the reviewed evidence and limitations.
 
+### A06 basket business-rule assessment
+
+On 25 November 2026, the operator used Burp to submit a negative quantity to the
+own-account basket API and reported that the basket displayed `-1`. Restoring
+`1` and refreshing returned the basket to its normal state. A separate Nginx
+JSON log extracts the submitted integer quantity for both SIEMs.
+
+Wazuh rule `119995` detects negative-quantity submissions. Reviewed Splunk
+records confirm index `web`, sourcetype `nginx:a06:json`, and extracted quantity
+and status fields. Scheduler evidence shows successful runs with one result
+and email-action selection. Mail logs identified a temporary DNS lookup failure;
+a later notification and activity completion were reported by the operator.
+
+The [A06 report](tests/owasp-top-10-2025/A06-insecure-design/OWASP-A06-Insecure-Design-Validation.md)
+contains the collection/parsing configuration, rule behavior, scheduled search,
+email subject/message, troubleshooting and recovery limits. The [evidence
+checklist](tests/owasp-top-10-2025/A06-insecure-design/screenshots/README.md)
+keeps the eight-image portfolio story concise. Finding, live-alert, received-email
+and final-recovery captures are still to upload. **Server-side quantity validation
+remains an open finding; no completed checkout or application patch is claimed.**
+
 ## Completed response workflows
+
+### A06 basket business-rule detection
+
+1. Defined the positive-integer quantity requirement and tested the operator's own basket.
+2. Recorded negative-state acceptance and restoration per operator confirmation.
+3. Added scoped quantity metadata and configured Wazuh/Splunk collection and negative-submission detections.
+4. Reviewed indexed fields, scheduled results and email-action attempts.
+5. Diagnosed the SMTP DNS failure and recorded the later operator-reported notification.
+6. Completed the guided restoration/recovery workflow per operator report; track remaining captures separately from application remediation.
 
 ### A04 authentication transport detection
 
@@ -401,7 +439,7 @@ for the reviewed evidence and limitations.
         │   ├── wazuh-rules.xml
         │   └── screenshots/
         │       ├── README.md
-        │       └── 3 reviewed key captures
+        │       └── selected key evidence and uploaded working captures
         ├── A05-injection/
         │   ├── OWASP-A05-SQL-Injection-Validation.md
         │   ├── burp-test-cases.md
@@ -410,6 +448,14 @@ for the reviewed evidence and limitations.
         │   └── screenshots/
         │       ├── README.md
         │       └── 12 evidence screenshots
+        ├── A06-insecure-design/
+        │   ├── OWASP-A06-Insecure-Design-Validation.md
+        │   ├── splunk-searches.spl
+        │   ├── wazuh-queries.txt
+        │   ├── wazuh-rules.xml
+        │   └── screenshots/
+        │       ├── README.md
+        │       └── supplied key evidence + remaining capture checklist
         └── A07-authentication-failures/
             ├── OWASP-A07-Authentication-Failures-Validation.md
             ├── splunk-searches.spl
@@ -453,10 +499,12 @@ replacements; this publication cleanup is recorded separately from lab completio
 - Controlled SQL-injection testing and investigation of Wazuh web alerts
 - Container dependency assessment, SBOM analysis, advisory triage and scanner-finding SIEM integration
 - HTTP authentication-transport assessment, scheme-aware Nginx JSON logging and dual-SIEM transport detections
+- Basket business-rule assessment, quantity-aware telemetry, negative-submission detections and SMTP/DNS troubleshooting
 - Wazuh custom web rules and Splunk web-security alert engineering
 - Incident containment, recovery and technical documentation
 
 ## Disclaimer
 
 All security testing documented in this repository was conducted only against privately owned and authorized virtual machines in an isolated homelab. The material is intended for defensive security education and portfolio demonstration.
+
 

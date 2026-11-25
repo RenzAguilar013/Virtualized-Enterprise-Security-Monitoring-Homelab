@@ -18,10 +18,9 @@ within A04; it does not claim comprehensive testing of encryption at rest,
 password storage, token cryptography, or every application cryptographic control.
 
 **Status:** HTTP/HTTPS checks, JSON decoding and the A04 rule match were reviewed.
-Post-test application availability and fresh Splunk collection passed. The live
-alert and notification workflow was configured during the guided activity;
-the corresponding dashboard, triggered-alert and received-email captures have
-not been supplied for review. **HTTPS enforcement remains an open finding.**
+Post-test application availability and fresh Splunk collection passed. Later uploads now verify the cleartext packet, live Wazuh alert, scheduled Splunk
+trigger and received email. The actual trigger listing shows Digest mode, while
+the guided setup specified per-result triggering. **HTTPS enforcement remains an open finding.**
 
 ## Environment
 
@@ -48,8 +47,7 @@ not been supplied for review. **HTTPS enforcement remains an open finding.**
 1. Established WEB01 application, container and monitoring-service baselines.
 2. Checked HTTP and HTTPS connectivity from Kali.
 3. Sent a fictional login POST using Burp Repeater and curl.
-4. Captured the test connection on Kali. The operator reported Screenshot 04
-   complete; that packet-capture image has not been supplied for review.
+4. Captured the test connection on Kali; Screenshot 04 was later uploaded and reviewed.
 5. Correlated the request through Nginx and Splunk using a query-string marker.
 6. Tested the original access record in Wazuh; the existing A07 authentication
    rule matched before a dedicated A04 rule was added.
@@ -197,7 +195,7 @@ becomes `validation_id`; ordinary requests use `unmarked`.
 | Schedule | Every minute: `* * * * *` |
 | Earliest / latest | `-5m` / `now` |
 | Condition | Number of results greater than zero |
-| Trigger | Per result |
+| Trigger | Per result in the guided setup; uploaded trigger listing shows Digest |
 | Suppression | 5 minutes by `asset,src_ip,uri,validation_id` |
 | Actions | Add to Triggered Alerts, severity High; Send Email |
 | Recipient | Existing lab notification recipient; no personal address published |
@@ -252,6 +250,12 @@ and email. Each new ID separates test notifications from the suppression state
 of earlier runs. The workflow uses normal collected traffic and the scheduled
 search; manual email dispatch is not equivalent evidence.
 
+The later uploaded trigger at 09:04 UTC is High, Scheduled and Digest. The inbox
+capture contains populated message fields and two result rows, including
+`A04-ALERT-20261120T090321Z`. Delivery is therefore reviewed; the uploaded mode
+and multi-row email differ from the intended per-result setting. Confirm the
+actual saved mode before claiming per-result suppression behavior.
+
 ## Detection outcome and evidence status
 
 | Check | Evidence status |
@@ -259,9 +263,9 @@ search; manual email dispatch is not equivalent evidence.
 | HTTP works; HTTPS connection fails | Reviewed and published Screenshot 02 |
 | Existing A07 rule matches original combined-log request | Reviewed working capture; setup image omitted from portfolio |
 | A04 JSON rule `119991`, level 10 | Reviewed and published Screenshot 12 |
-| Packet capture with fictional cleartext body | Operator reported Screenshot 04 complete; image not supplied |
-| Live Wazuh alert and login-field Splunk investigation | Guided steps completed in conversation; screenshots 13/16 not supplied |
-| Triggered alert and received email | Workflow configured; screenshots 18/19 not supplied for review |
+| Packet capture with fictional cleartext body | Uploaded and reviewed Screenshot 04 |
+| Live Wazuh alert | Uploaded and reviewed Screenshot 13, rule 119991 at level 10 |
+| Triggered alert and received email | Uploaded and reviewed Screenshots 18/19; Digest-mode caveat recorded |
 | Post-test recovery and fresh Splunk ingestion | Reviewed and published Screenshot 20 |
 
 Logtest validates rule matching; it does not itself create a live alert. A
@@ -313,3 +317,4 @@ this exercise. The intentionally vulnerable target remains on HTTP inside the la
 - [Wazuh JSON decoder](https://documentation.wazuh.com/current/user-manual/ruleset/decoders/json-decoder.html)
 - [Wazuh custom rules](https://documentation.wazuh.com/current/user-manual/ruleset/rules/custom.html)
 - [Splunk event line breaking](https://help.splunk.com/en/splunk-enterprise/get-started/get-data-in/10.6/configure-event-processing/configure-event-line-breaking)
+

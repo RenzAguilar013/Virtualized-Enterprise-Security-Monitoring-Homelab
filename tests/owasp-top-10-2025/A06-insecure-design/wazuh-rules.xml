@@ -1,0 +1,19 @@
+<group name="local,web,owasp_a06,business_logic,">
+
+  <rule id="119994" level="0">
+    <decoded_as>json</decoded_as>
+    <field name="integration" type="pcre2">^a06_basket$</field>
+    <field name="asset" type="pcre2">^WEB01$</field>
+    <description>A06 basket-update telemetry.</description>
+  </rule>
+
+  <rule id="119995" level="10">
+    <if_sid>119994</if_sid>
+    <field name="method" type="pcre2">^PUT$</field>
+    <field name="uri" type="pcre2">^/api/BasketItems/[0-9]+$</field>
+    <field name="requested_quantity" type="pcre2">^-[1-9][0-9]*$</field>
+    <description>OWASP A06: Negative basket quantity $(requested_quantity) submitted to $(uri) on $(asset) from $(src_ip), status $(status).</description>
+    <group>negative_quantity,</group>
+  </rule>
+
+</group>
